@@ -4,8 +4,21 @@ source('scripts/session_setup.R')
 
 # frass -------------------------------------------------------------------
 
+# make frass reliability useable
 
-# generate modified frass data that is usable for plotting
+usefulReliability <- 
+  frassReliability %>% 
+  # remove any incorrect site IDs
+  filter(site != 117 | site != 8892356,
+         !is.na(reliability)) %>% 
+  # add site IDs to dataset
+  mutate(siteID = ifelse(site == 117,
+                'PR',
+                ifelse(site == 8892356,
+                            'NCBG',
+                            NA)))
+
+# make frass data useable
 
 usefulFrass <- 
   frassData %>% 
@@ -26,13 +39,36 @@ usefulFrass <-
   filter(
     !is.na(Frass.mass..mg.),
     !is.na(Frass.number)) %>% 
-  # join reliability data
+  # remove any incorrect site IDs
+  filter(Site != 'Prairie Ridge' | Site != 'Botanical Garden') %>% 
+  # add site IDs to dataset
+  mutate(siteID = ifelse(Site == 'Prairie Ridge',
+                         'PR',
+                         ifelse(Site == 'Botanical Garden',
+                                'NCBG',
+                                NA)))
   
-  
-# need to modify data for:
-# make site code vs site name match across CC, frass, and frass reliability to be able to join - probably need to pull site keys from another repo
+# extract CC data and make useable
+
+usefulCC <- 
+  ccData %>% 
+  # extract caterpillar observations from PR and NCBG
+  filter(Name != 'Prairie Ridge Ecostation' | Name != 'NC Botanical Garden',
+         Group == 'caterpillar') %>% 
+  # add site IDs to dataset
+  mutate(siteID = ifelse(Name == 'Prairie Ridge',
+                         'PR',
+                         ifelse(Name == 'Botanical Garden',
+                                'NCBG',
+                                NA)))
+
+## need to modify data for:
 # do not include if '90 degree' in the notes column - indicates potential false 0 - and do we want to include accuracy sorting for 'tilt' in that column?
 # join reliability to main file - include option in density by week function for sorting by reliability
+
+## next steps
+# generate density by week function for frass
+# check density by week for CC and make sure it is compatibly for comparison with frass
 
 
 # CC! ---------------------------------------------------------------------
