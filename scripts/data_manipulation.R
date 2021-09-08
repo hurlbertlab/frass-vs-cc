@@ -26,6 +26,11 @@ usefulReliability <-
 
 usefulFrass <- 
   frassData %>% 
+  # add a year column
+  mutate(
+    year = year(
+      as.Date(frassData$Date.Collected,
+              format = '%m/%d/%Y'))) %>% 
   # add a julian week column
   mutate(
     julianWeek = floor(
@@ -33,13 +38,12 @@ usefulFrass <-
         as.Date(
           frassData$Date.Collected,
           format = '%m/%d/%Y'),
-        origin = as.Date('2021-01-01')) / 7)) %>% 
-  # add a year column
-  mutate(
-    year = year(
-      as.Date(frassData$Date.Collected,
-              format = '%m/%d/%Y'))) %>% 
-  # remove rows where mass or number of frass is NA
+        # keeps giving origin must be of length 1 error
+        origin = case_when(grepl('2017',frassData$Date.Collected) ~ '2017-01-01',
+                           grepl('2018', frassData$Date.Collected) ~ '2018-01-01',
+                           grepl('2019', frassData$Date.Collected) ~ '2019-01-01',
+                           grepl('2021', frassData$Date.Collected) ~ '20121-01-01',)) / 7)) %>% 
+    # remove rows where mass or number of frass is NA
   filter(
     !is.na(Frass.mass..mg.),
     !is.na(Frass.number)) %>% 
@@ -60,7 +64,10 @@ usefulFrass <-
          frassMassmg = Frass.mass..mg.,
          frassNumber = Frass.number,
          frassMethod = Method,
-         notes = Notes)
+         notes = Notes) %>% 
+  # attach reliability information
+  left_join(usefulReliability,
+            by = c('siteID', 'date'))
   
 # extract CC data and make useable
 
