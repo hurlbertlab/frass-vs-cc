@@ -10,13 +10,17 @@ usefulReliability <-
   frassReliability %>% 
   # remove any incorrect site IDs
   filter(site != 117 | site != 8892356,
-         !is.na(reliability)) %>% 
+         !is.na(reliability)) %>%
   # add site IDs to dataset
   mutate(siteID = ifelse(site == 117,
                 'PR',
                 ifelse(site == 8892356,
                             'NCBG',
-                            NA)))
+                            NA))) %>% 
+  # subset to relevant columns
+  select(siteID,
+         date,
+         reliability)
 
 # make frass data useable
 
@@ -24,16 +28,16 @@ usefulFrass <-
   frassData %>% 
   # add a julian week column
   mutate(
-    Julian.Week = floor(
+    julianWeek = floor(
       julian(
         as.Date(
-          frassData$Date.Set,
+          frassData$Date.Collected,
           format = '%m/%d/%Y'),
         origin = as.Date('2021-01-01')) / 7)) %>% 
   # add a year column
   mutate(
-    Year = year(
-      as.Date(frassData$Date.Set,
+    year = year(
+      as.Date(frassData$Date.Collected,
               format = '%m/%d/%Y'))) %>% 
   # remove rows where mass or number of frass is NA
   filter(
@@ -46,7 +50,17 @@ usefulFrass <-
                          'PR',
                          ifelse(Site == 'Botanical Garden',
                                 'NCBG',
-                                NA)))
+                                NA))) %>% 
+  # subset to relevant columns
+  select(siteID,
+         date = Date.Collected,
+         year,
+         julianWeek,
+         trapID = Trap,
+         frassMassmg = Frass.mass..mg.,
+         frassNumber = Frass.number,
+         frassMethod = Method,
+         notes = Notes)
   
 # extract CC data and make useable
 
