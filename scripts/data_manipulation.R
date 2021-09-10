@@ -32,6 +32,7 @@ usefulFrass <-
       as.Date(frassData$Date.Collected,
               format = '%m/%d/%Y'))) %>%  
   # add a julian week column
+  # try using yday()
   mutate(
     julianWeek = floor(
       julian(
@@ -81,11 +82,11 @@ usefulCC <-
                                 NA)))
 
 ## need to modify data for:
-# do not include if '90 degree' in the notes column - indicates potential false 0 - and do we want to include accuracy sorting for 'tilt' in that column?
+# do not include if '45 degree ' or 90 degree' in the notes column - indicates potential false 0 - and do we want to include accuracy sorting for 'tilt' in that column?
 # join reliability to main file - include option in density by week function for sorting by reliability
 
 ## next steps
-# generate density by week function for frass
+# generate mass and number by week function for frass
 # check density by week for CC and make sure it is compatibly for comparison with frass
 
 
