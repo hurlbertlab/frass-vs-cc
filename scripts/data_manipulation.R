@@ -9,7 +9,7 @@ source('scripts/session_setup.R')
 usefulReliability <- 
   frassReliability %>% 
   # remove any incorrect site IDs
-  filter(site != 117 | site != 8892356,
+  filter(site == 117 | site == 8892356,
          !is.na(reliability)) %>%
   # add site IDs to dataset
   mutate(siteID = ifelse(site == 117,
@@ -24,6 +24,8 @@ usefulReliability <-
 
 # make frass data useable
 
+# jday code from cc: julianweek = 7*floor(julianday/7) + 4
+
 usefulFrass <- 
   frassData %>% 
   # add a year column
@@ -33,18 +35,12 @@ usefulFrass <-
               format = '%m/%d/%Y'))) %>%  
   # add a julian week column
   # try using yday()
-  mutate(
-    julianWeek = floor(
-      julian(
-        as.Date(
-          frassData$Date.Collected,
-          format = '%m/%d/%Y'),
-        # keep getting origin must of length 1 error
-        origin = paste(.$year, '-01-01'))) / 7) %>% 
+  mutate(julianDay = yday(as.Date(frassData$Date.Collected,
+                                  format = '%m/%d/%Y')),
+         julianWeek = 7*floor(julianDay/7)+4) %>% 
     # remove rows where mass or number of frass is NA
-  filter(
-    !is.na(Frass.mass..mg.),
-    !is.na(Frass.number)) %>% 
+  drop_na(Frass.mass..mg.,
+          Frass.number) %>% 
   # remove any incorrect site IDs
   filter(Site != 'Prairie Ridge' | Site != 'Botanical Garden') %>% 
   # add site IDs to dataset
@@ -81,13 +77,10 @@ usefulCC <-
                                 'NCBG',
                                 NA)))
 
-## need to modify data for:
+## next steps:
 # do not include if '45 degree ' or 90 degree' in the notes column - indicates potential false 0 - and do we want to include accuracy sorting for 'tilt' in that column?
-# join reliability to main file - include option in density by week function for sorting by reliability
-
-## next steps
 # generate mass and number by week function for frass
-# check density by week for CC and make sure it is compatibly for comparison with frass
+# check density by week for CC and make sure it is compatible for comparison with frass
 
 
 # CC! ---------------------------------------------------------------------
