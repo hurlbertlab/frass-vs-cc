@@ -8,6 +8,33 @@ source('scripts/session_setup.R')
 # check density by week for CC and make sure it is compatible for comparison with frass
 
 
+
+# frass -------------------------------------------------------------------
+
+meanFrassByWeek = function(
+  surveyData,
+  for_year, # 2018-2021
+  min_reliability = 3, # 1-3, with 3 being the highest reliability
+  site_id, # 'NC Botanical Garden' or 'Prairie Ridge Ecostation'
+  jdRange = c(1,365),
+  plot = F,
+  plotVar = 'mass' # 'mass' or 'number',
+) {
+  
+  # filter data to site, year, and reliability; remove tilted traps from dataset
+  
+  # filter1 <-
+    surveyData %>% 
+    filter(
+      siteID == site_id,
+      year == for_year,
+      reliability >= min_reliability,
+      !grepl('tilt', notes))
+  
+  # calculate mean mass and number of frass by 
+  
+}
+
 # CC! ---------------------------------------------------------------------
 
 

@@ -40,7 +40,7 @@ usefulReliability <-
   mutate(siteID = ifelse(site == 117,
                          'Prairie Ridge Ecostation',
                          ifelse(site == 8892356,
-                                'NC',
+                                'NC Botanical Garden',
                                 NA))) %>% 
   # subset to relevant columns
   select(siteID,
