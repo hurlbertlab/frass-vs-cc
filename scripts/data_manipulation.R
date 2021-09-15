@@ -2,81 +2,6 @@
 source('scripts/session_setup.R')
 
 
-# frass -------------------------------------------------------------------
-
-# make frass reliability useable
-
-usefulReliability <- 
-  frassReliability %>% 
-  # remove any incorrect site IDs
-  filter(site == 117 | site == 8892356,
-         !is.na(reliability)) %>%
-  # add site IDs to dataset
-  mutate(siteID = ifelse(site == 117,
-                'PR',
-                ifelse(site == 8892356,
-                            'NCBG',
-                            NA))) %>% 
-  # subset to relevant columns
-  select(siteID,
-         date,
-         reliability)
-
-# make frass data useable
-
-# jday code from cc: julianweek = 7*floor(julianday/7) + 4
-
-usefulFrass <- 
-  frassData %>% 
-  # add a year column
-  mutate(
-    year = year(
-      as.Date(frassData$Date.Collected,
-              format = '%m/%d/%Y'))) %>%  
-  # add a julian week column
-  # try using yday()
-  mutate(julianDay = yday(as.Date(frassData$Date.Collected,
-                                  format = '%m/%d/%Y')),
-         julianWeek = 7*floor(julianDay/7)+4) %>% 
-    # remove rows where mass or number of frass is NA
-  drop_na(Frass.mass..mg.,
-          Frass.number) %>% 
-  # remove any incorrect site IDs
-  filter(Site != 'Prairie Ridge' | Site != 'Botanical Garden') %>% 
-  # add site IDs to dataset
-  mutate(siteID = ifelse(Site == 'Prairie Ridge',
-                         'PR',
-                         ifelse(Site == 'Botanical Garden',
-                                'NCBG',
-                                NA))) %>% 
-  # subset to relevant columns
-  select(siteID,
-         date = Date.Collected,
-         year,
-         julianWeek,
-         trapID = Trap,
-         frassMassmg = Frass.mass..mg.,
-         frassNumber = Frass.number,
-         frassMethod = Method,
-         notes = Notes) %>% 
-  # attach reliability information
-  left_join(usefulReliability,
-            by = c('siteID', 'date'))
-  
-# extract CC data and make useable
-
-usefulCC <- 
-  ccData %>% 
-  # extract caterpillar observations from PR and NCBG
-  filter(Name != 'Prairie Ridge Ecostation' | Name != 'NC Botanical Garden',
-         Group == 'caterpillar') %>% 
-  # add site IDs to dataset
-  mutate(siteID = ifelse(Name == 'Prairie Ridge',
-                         'PR',
-                         ifelse(Name == 'Botanical Garden',
-                                'NCBG',
-                                NA)))
-
 ## next steps:
 # do not include if '45 degree ' or 90 degree' in the notes column - indicates potential false 0 - and do we want to include accuracy sorting for 'tilt' in that column?
 # generate mass and number by week function for frass
@@ -86,49 +11,35 @@ usefulCC <-
 # CC! ---------------------------------------------------------------------
 
 
-# Function for calculating the mode of a series of values
-# --in this particular use case, if there multiple modes, we want the largest value
-Mode = function(x){ 
-  if (!is.numeric(x)) {
-    stop("values must be numeric for mode calculation")
-  }
-  ta = table(x)
-  tam = max(ta)
-  mod = as.numeric(names(ta)[ta == tam])
-  return(max(mod))
-}
-
-
-# Function for substituting values based on a condition using dplyr::mutate
-# Modification of dplyr's mutate function that only acts on the rows meeting a condition
-mutate_cond <- function(.data, condition, ..., envir = parent.frame()) {
-  condition <- eval(substitute(condition), .data, envir)
-  .data[condition, ] <- .data[condition, ] %>% mutate(...)
-  .data
-}
-
-
 #function for calculating and displaying mean density by week for CC data
 
-meanDensityByWeek = function(surveyData,
-                             # merged dataframe of Survey and arthropodSighting tables for a single site
-                             ordersToInclude = 'All',
-                             # which arthropod orders to calculate density for (codes)
-                             minLength = 0,
-                             # minimum arthropod size to include 
-                             jdRange = c(1,365),
-                             outlierCount = 10000,
-                             plot = FALSE,
-                             plotVar = 'fracSurveys', 
-                             # 'meanDensity' or 'fracSurveys' or 'meanBiomass'
-                             minSurveyCoverage = 0.8,
-                             # minimum proportion of unique survey branches examined per week in order to include the week as a data point
-                             allDates = TRUE,
-                             new = TRUE,
-                             color = 'black',
-                             allCats = TRUE,
-                             ...) 
+meanDensityByWeek = function(
+  surveyData,
+  year,
+  site_id,
+  ordersToInclude = 'All',
+  # which arthropod orders to calculate density for (codes)
+  minLength = 0,
+  # minimum arthropod size to include 
+  jdRange = c(1,365),
+  outlierCount = 10000,
+  plot = FALSE,
+  plotVar = 'fracSurveys', 
+  # 'meanDensity' or 'fracSurveys' or 'meanBiomass'
+  minSurveyCoverage = 0.8,
+  # minimum proportion of unique survey branches examined per week in order to include the week as a data point
+  allDates = TRUE,
+  new = TRUE,
+  color = 'black',
+  allCats = TRUE,
+  ...) 
 {
+  surveyData <- 
+    filter(
+      surveyData,
+      Year == year,
+      siteID == site_id)
+  
   if(length(ordersToInclude)==1 & ordersToInclude[1]=='All') {
     ordersToInclude = unique(surveyData$Group)
   }
