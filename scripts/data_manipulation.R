@@ -3,9 +3,9 @@ source('scripts/session_setup.R')
 
 
 ## next steps:
-# generate mass and number by week function for frass
-  # do we want to remove weeks with less than a set number of useable traps?
-# check density by week for CC and make sure it is compatible for comparison with frass
+# do we want to remove weeks with less than a set number of useable traps?
+# check what causes large gap in records from 2018 (jw 150-180)
+# generate side-by-side figures for frass and cc - may require modifying cc function for compatibility
 
 
 
@@ -34,6 +34,7 @@ meanFrassByWeek = function(
       julianDay <= jdRange[2])
   
   # calculate mean mass and number of frass by week
+  week_means <- 
   filter1 %>% 
     group_by(julianWeek) %>% 
     summarize(
@@ -41,6 +42,26 @@ meanFrassByWeek = function(
       mean_mass = mean(frassMassmg),
       mean_number = mean(frassNumber))
   
+    if(plot == T) {
+      ggplot(
+        week_means,
+        aes(
+          x = julianWeek,
+          y = case_when(
+            plotVar == 'mass' ~ mean_mass,
+            plotVar == 'number' ~ mean_number))) +
+        geom_point() +
+        geom_line() +
+        labs(
+          x = 'Julian Week',
+          y = case_when(
+            plotVar == 'mass' ~ 'Mean Mass of Frass (mg)',
+            plotVar == 'number' ~ 'Mean Number of Frass'),
+          title = case_when(
+            plotVar == 'mass' ~ 'Mean Frass Mass by Julian Week',
+            plotVar == 'number' ~ 'Mean Frass Number by Julian Week'),
+          subtitle = for_year)
+    }
 }
 
 # CC! ---------------------------------------------------------------------
