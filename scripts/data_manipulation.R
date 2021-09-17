@@ -3,8 +3,8 @@ source('scripts/session_setup.R')
 
 
 ## next steps:
-# do not include if '45 degree ' or 90 degree' in the notes column - indicates potential false 0 - and do we want to include accuracy sorting for 'tilt' in that column?
 # generate mass and number by week function for frass
+  # do we want to remove weeks with less than a set number of useable traps?
 # check density by week for CC and make sure it is compatible for comparison with frass
 
 
@@ -13,7 +13,7 @@ source('scripts/session_setup.R')
 
 meanFrassByWeek = function(
   surveyData,
-  for_year, # 2018-2021
+  for_year, # 2015-2021
   min_reliability = 3, # 1-3, with 3 being the highest reliability
   site_id, # 'NC Botanical Garden' or 'Prairie Ridge Ecostation'
   jdRange = c(1,365),
@@ -23,15 +23,23 @@ meanFrassByWeek = function(
   
   # filter data to site, year, and reliability; remove tilted traps from dataset
   
-  # filter1 <-
+  filter1 <-
     surveyData %>% 
     filter(
       siteID == site_id,
       year == for_year,
       reliability >= min_reliability,
-      !grepl('tilt', notes))
+      !grepl('tilt', notes),
+      julianDay >= jdRange[1],
+      julianDay <= jdRange[2])
   
-  # calculate mean mass and number of frass by 
+  # calculate mean mass and number of frass by week
+  filter1 %>% 
+    group_by(julianWeek) %>% 
+    summarize(
+      n_traps = n(),
+      mean_mass = mean(frassMassmg),
+      mean_number = mean(frassNumber))
   
 }
 

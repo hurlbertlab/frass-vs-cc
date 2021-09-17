@@ -76,6 +76,7 @@ usefulFrass <-
   select(siteID,
          date = Date.Collected,
          year,
+         julianDay,
          julianWeek,
          trapID = Trap,
          frassMassmg = Frass.mass..mg.,
