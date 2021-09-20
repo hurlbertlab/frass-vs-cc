@@ -34,18 +34,20 @@ frassReliability <- read_csv('data/raw_data/frass_reliability_2021-09-03.csv')
 usefulReliability <- 
   frassReliability %>% 
   # remove any incorrect site IDs
-  filter(site == 117 | site == 8892356,
-         !is.na(reliability)) %>%
+  filter(site %in% c(117, 8892356)) %>%
   # add site IDs to dataset
-  mutate(siteID = ifelse(site == 117,
-                         'Prairie Ridge Ecostation',
-                         ifelse(site == 8892356,
-                                'NC Botanical Garden',
-                                NA))) %>% 
+  mutate(
+    date = as.Date(
+      date,
+      format = '%m/%d/%Y'),
+    siteID = case_when(
+      site == 117 ~ 'Prairie Ridge Ecostation',
+      site == 8892356 ~ 'NC Botanical Garden')) %>% 
   # subset to relevant columns
-  select(siteID,
-         date,
-         reliability)
+  select(
+    siteID,
+    date,
+    reliability)
 
 # make frass data useable
 
@@ -53,39 +55,40 @@ usefulFrass <-
   frassData %>% 
   # add a year column
   mutate(
-    year = year(
-      as.Date(frassData$Date.Collected,
-              format = '%m/%d/%Y'))) %>%  
+    date = as.Date(
+      Date.Collected,
+      format = '%m/%d/%Y'),
+    year = year(date)) %>%
   # add a julian week column
-  # try using yday()
-  mutate(julianDay = yday(as.Date(frassData$Date.Collected,
-                                  format = '%m/%d/%Y')),
-         julianWeek = 7*floor(julianDay/7)+4) %>% 
+  mutate(
+    julianDay = yday(date),
+    julianWeek = 7*floor(julianDay/7)+4) %>% 
   # remove rows where mass or number of frass is NA
-  drop_na(Frass.mass..mg.,
-          Frass.number) %>% 
+  drop_na(
+    Frass.mass..mg.,
+    Frass.number) %>% 
   # remove any incorrect site IDs
   filter(Site != 'Prairie Ridge' | Site != 'Botanical Garden') %>% 
   # add site IDs to dataset
-  mutate(siteID = ifelse(Site == 'Prairie Ridge',
-                         'Prairie Ridge Ecostation',
-                         ifelse(Site == 'Botanical Garden',
-                                'NC Botanical Garden',
-                                NA))) %>% 
+  mutate(siteID = case_when(
+    Site == 'Prairie Ridge' ~ 'Prairie Ridge Ecostation',
+    Site == 'Botanical Garden' ~ 'NC Botanical Garden')) %>% 
   # subset to relevant columns
-  select(siteID,
-         date = Date.Collected,
-         year,
-         julianDay,
-         julianWeek,
-         trapID = Trap,
-         frassMassmg = Frass.mass..mg.,
-         frassNumber = Frass.number,
-         frassMethod = Method,
-         notes = Notes) %>% 
+  select(
+    siteID,
+    date,
+    year,
+    julianDay,
+    julianWeek,
+    trapID = Trap,
+    frassMassmg = Frass.mass..mg.,
+    frassNumber = Frass.number,
+    frassMethod = Method,
+    notes = Notes) %>% 
   # attach reliability information
-  left_join(usefulReliability,
-            by = c('siteID', 'date'))
+  left_join(
+    usefulReliability,
+    by = c('siteID', 'date'))
 
 # extract CC data and make useable
 
