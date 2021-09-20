@@ -3,7 +3,6 @@
 # load libraries ----------------------------------------------------------
 
 library(gsheet)
-library(lubridate)
 library(tidyverse)
 
 
@@ -37,9 +36,7 @@ usefulReliability <-
   filter(site %in% c(117, 8892356)) %>%
   # add site IDs to dataset
   mutate(
-    date = as.Date(
-      date,
-      format = '%m/%d/%Y'),
+    date = mdy(date),
     siteID = case_when(
       site == 117 ~ 'Prairie Ridge Ecostation',
       site == 8892356 ~ 'NC Botanical Garden')) %>% 
@@ -55,9 +52,7 @@ usefulFrass <-
   frassData %>% 
   # add a year column
   mutate(
-    date = as.Date(
-      Date.Collected,
-      format = '%m/%d/%Y'),
+    date = mdy(date),
     year = year(date)) %>%
   # add a julian week column
   mutate(
