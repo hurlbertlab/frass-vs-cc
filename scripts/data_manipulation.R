@@ -4,7 +4,6 @@ source('scripts/session_setup.R')
 
 ## next steps:
 # do we want to remove weeks with less than a set number of useable traps?
-# check what causes large gap in records from 2018 (jw 150-180)
 # generate side-by-side figures for frass and cc - may require modifying cc function for compatibility
 
 
@@ -41,6 +40,8 @@ meanFrassByWeek = function(
       n_traps = n(),
       mean_mass = mean(frassMassmg),
       mean_number = mean(frassNumber))
+  
+  return(week_means)
   
     if(plot == T) {
       ggplot(
