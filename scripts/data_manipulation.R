@@ -17,7 +17,7 @@ meanFrassByWeek = function(
   site_id, # 'NC Botanical Garden' or 'Prairie Ridge Ecostation'
   jdRange = c(1,365),
   plot = F,
-  plotVar = 'mass' # 'mass' or 'number',
+  plotVar = 'mean_mass' # 'mean_mass' or 'mean_number',
 ) {
   
   # filter data to site, year, and reliability; remove tilted traps from dataset
@@ -41,27 +41,29 @@ meanFrassByWeek = function(
       mean_mass = mean(frassMassmg),
       mean_number = mean(frassNumber))
   
-  return(week_means)
+  if(plot == F){
+    return(week_means)
+  }
   
-    if(plot == T) {
-      ggplot(
-        week_means,
-        aes(
-          x = julianWeek,
-          y = case_when(
-            plotVar == 'mass' ~ mean_mass,
-            plotVar == 'number' ~ mean_number))) +
+  if(plot == T) {
+    return(ggplot(
+      week_means,
+      aes(
+        x = julianWeek,
+        y = case_when(
+          plotVar == 'mean_mass' ~ mean_mass,
+          plotVar == 'mean_number' ~ mean_number))) +
         geom_point() +
         geom_line() +
         labs(
           x = 'Julian Week',
           y = case_when(
-            plotVar == 'mass' ~ 'Mean Mass of Frass (mg)',
-            plotVar == 'number' ~ 'Mean Number of Frass'),
+            plotVar == 'mean_mass' ~ 'Mean Mass of Frass (mg)',
+            plotVar == 'mean_number' ~ 'Mean Number of Frass'),
           title = case_when(
-            plotVar == 'mass' ~ 'Mean Frass Mass by Julian Week',
-            plotVar == 'number' ~ 'Mean Frass Number by Julian Week'),
-          subtitle = for_year)
+            plotVar == 'mean_mass' ~ 'Mean Frass Mass by Julian Week',
+            plotVar == 'mean_number' ~ 'Mean Frass Number by Julian Week'),
+          subtitle = for_year))
     }
 }
 

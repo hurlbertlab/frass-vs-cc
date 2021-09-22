@@ -4,6 +4,7 @@
 
 library(gsheet)
 library(tidyverse)
+library(lubridate)
 
 
 # read in raw data files --------------------------------------------------
@@ -50,9 +51,9 @@ usefulReliability <-
 
 usefulFrass <- 
   frassData %>% 
-  # add a year column
+  # add a year column and working date column
   mutate(
-    date = mdy(date),
+    date = mdy(Date.Collected),
     year = year(date)) %>%
   # add a julian week column
   mutate(
