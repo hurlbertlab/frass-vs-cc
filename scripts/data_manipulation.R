@@ -3,6 +3,7 @@ source('scripts/session_setup.R')
 
 
 ## next steps:
+# generate master data frame including frass and cc data - focus on flexibility especially when including the addition of future data - save as .csv in processed data
 # do we want to remove weeks with less than a set number of useable traps?
 # generate side-by-side figures for frass and cc - may require modifying cc function for compatibility
 
