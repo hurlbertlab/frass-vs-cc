@@ -95,6 +95,13 @@ usefulCC <-
   # add site IDs to dataset
   mutate(siteID = Name)
 
+# combine CC and frass data
+cc_frass <- 
+  usefulCC %>% 
+  inner_join(
+    usefulFrass,
+    by = c('siteID', 'Year' = 'year', 'julianweek' = 'julianWeek'))
+
 
 # necessary custom functions ----------------------------------------------
 
