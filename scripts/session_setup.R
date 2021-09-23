@@ -96,11 +96,20 @@ usefulCC <-
   mutate(siteID = Name)
 
 # combine CC and frass data
-cc_frass <- 
-  usefulCC %>% 
-  inner_join(
-    usefulFrass,
-    by = c('siteID', 'Year' = 'year', 'julianweek' = 'julianWeek'))
+# cc_frass <- 
+#   usefulCC %>% 
+#   inner_join(
+#     usefulFrass,
+#     by = c('siteID', 'Year' = 'year', 'julianweek' = 'julianWeek'))
+
+# write the combined dataframes to a .csv
+
+# write_csv(
+#   cc_frass,
+#   paste(
+#     'cc_frass',
+#     today(),
+#     sep = '_'))
 
 
 # necessary custom functions ----------------------------------------------

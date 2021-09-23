@@ -2,7 +2,7 @@
 source('scripts/session_setup.R')
 
 
-## next steps: addition of future data - save as .csv in processed data
+## next steps:
 # compare frass plots with different reliability levels - mass and number
 # generate side-by-side figures for frass and cc - may require modifying cc function for compatibility
 # raw correlation between frass and cc data
@@ -158,8 +158,3 @@ meanDensityByWeek = function(
   }
   return(arthCount)
 }
-
-
-# data comparison ---------------------------------------------------------
-
-# join data by julian week for plotting
