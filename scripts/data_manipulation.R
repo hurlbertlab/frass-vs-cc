@@ -2,8 +2,7 @@
 source('scripts/session_setup.R')
 
 
-## next steps:
-# generate master data frame including frass and cc data - focus on flexibility especially when including the addition of future data - save as .csv in processed data
+## next steps: addition of future data - save as .csv in processed data
 # compare frass plots with different reliability levels - mass and number
 # generate side-by-side figures for frass and cc - may require modifying cc function for compatibility
 # raw correlation between frass and cc data
