@@ -1,5 +1,4 @@
 
-
 # load libraries ----------------------------------------------------------
 
 library(gsheet)
@@ -94,44 +93,4 @@ usefulCC <-
   filter(Name %in% c('Prairie Ridge Ecostation', 'NC Botanical Garden')) %>% 
   # add site IDs to dataset
   mutate(siteID = Name)
-
-# combine CC and frass data
-# cc_frass <- 
-#   usefulCC %>% 
-#   inner_join(
-#     usefulFrass,
-#     by = c('siteID', 'Year' = 'year', 'julianweek' = 'julianWeek'))
-
-# write the combined dataframes to a .csv
-
-# write_csv(
-#   cc_frass,
-#   paste(
-#     'cc_frass',
-#     today(),
-#     sep = '_'))
-
-
-# necessary custom functions ----------------------------------------------
-
-# Function for calculating the mode of a series of values
-# --in this particular use case, if there multiple modes, we want the largest value
-Mode = function(x){ 
-  if (!is.numeric(x)) {
-    stop("values must be numeric for mode calculation")
-  }
-  ta = table(x)
-  tam = max(ta)
-  mod = as.numeric(names(ta)[ta == tam])
-  return(max(mod))
-}
-
-
-# Function for substituting values based on a condition using dplyr::mutate
-# Modification of dplyr's mutate function that only acts on the rows meeting a condition
-mutate_cond <- function(.data, condition, ..., envir = parent.frame()) {
-  condition <- eval(substitute(condition), .data, envir)
-  .data[condition, ] <- .data[condition, ] %>% mutate(...)
-  .data
-}
 

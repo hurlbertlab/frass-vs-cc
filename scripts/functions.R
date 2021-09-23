@@ -7,9 +7,30 @@ source('scripts/session_setup.R')
 # generate side-by-side figures for frass and cc - may require modifying cc function for compatibility
 # raw correlation between frass and cc data
 
+# component custom functions ----------------------------------------------
+
+# Function for calculating the mode of a series of values
+# --in this particular use case, if there multiple modes, we want the largest value
+Mode = function(x){ 
+  if (!is.numeric(x)) {
+    stop("values must be numeric for mode calculation")
+  }
+  ta = table(x)
+  tam = max(ta)
+  mod = as.numeric(names(ta)[ta == tam])
+  return(max(mod))
+}
 
 
-# frass -------------------------------------------------------------------
+# Function for substituting values based on a condition using dplyr::mutate
+# Modification of dplyr's mutate function that only acts on the rows meeting a condition
+mutate_cond <- function(.data, condition, ..., envir = parent.frame()) {
+  condition <- eval(substitute(condition), .data, envir)
+  .data[condition, ] <- .data[condition, ] %>% mutate(...)
+  .data
+}
+
+# frass analysis -------------------------------------------------------------------
 
 meanFrassByWeek = function(
   surveyData,
@@ -69,7 +90,6 @@ meanFrassByWeek = function(
 }
 
 # CC! ---------------------------------------------------------------------
-
 
 #function for calculating and displaying mean density by week for CC data
 
@@ -157,4 +177,107 @@ meanDensityByWeek = function(
     points(arthCount$julianweek, arthCount[, plotVar], pch = 16, col = color, ...)
   }
   return(arthCount)
+}
+
+
+# combining data ----------------------------------------------------------
+
+# combine frass and cc by week stats for a year and site
+
+combinedByWeek = function(
+  year, # 2017-2021
+  site, # 'NC Botanical Garden' or 'Prairie Ridge Ecostation'
+  jdRange = c(1,365), # range of Julian days to analyze
+  frass_data, # data frame suitable for frass by week analysis
+  frass_reliability = 2, # minimum reliability of frass for inclusion
+  cc_data, # data frame suitable for CC by week analysis
+  cc_min_length = 0 # minimum caterpillar length for inclusion
+)  {
+  
+  frass_stats <- 
+    meanFrassByWeek(
+      surveyData = frass_data,
+      for_year = year,
+      min_reliability = frass_reliability,
+      site_id = site,
+      jdRange = jdRange) %>% 
+    mutate(
+      site = site,
+      year = year)
+  
+  cc_stats <- 
+    meanDensityByWeek(
+      surveyData = cc_data,
+      year = year,
+      site_id = site,
+      ordersToInclude = 'caterpillar',
+      minLength = cc_min_length,
+      jdRange = jdRange) %>% 
+    mutate(
+      site = site,
+      year = year)
+  
+  cc_stats %>% 
+    left_join(
+      frass_stats,
+      by = c(
+        'julianweek' = 'julianWeek',
+        'site',
+        'year'))
+}
+
+# generate a data frame with by-week stats from all years and sites
+
+summary_stats = function(
+  years = 2018:year(today()),
+  sites = c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
+  frass_rel = 2,
+  write = F,
+  view = T) {
+  
+  temp <- 
+    map_dfr(
+      years,
+      function(x) {
+        map_dfr(
+          sites,
+          function(y) {
+            combinedByWeek(
+              year = x,
+              site = y,
+              frass_data = usefulFrass,
+              frass_reliability = frass_rel,
+              cc_data = usefulCC)
+          })
+      }) %>% 
+    arrange(
+      year,
+      site,
+      julianweek) %>% 
+    relocate(
+      site,
+      year,
+      .before = julianweek)
+  
+  if(write == T) {
+    write_csv(
+      temp,
+      file = paste(
+        'data/processed_data/',
+        'weekly_stats_',
+        paste(
+          min(temp$year),
+          max(temp$year),
+          sep = '-'),
+        paste(
+          '_rel',
+          frass_rel,
+          sep = ''),
+        '.csv',
+        sep = ''))
+  }
+  
+  if(view == T) {
+    temp
+  }
 }
