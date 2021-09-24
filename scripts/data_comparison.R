@@ -39,7 +39,21 @@ ggplot(
   geom_line(color = 'forestgreen') +
   scale_y_continuous(
     name = 'Mean Frass Mass',
-    sec.axis = sec_axis(~./5, name = 'Mean Caterpillar Biomass')) +
+    sec.axis = sec_axis(
+      ~./(max(
+        comp_data_r3 %>% 
+          filter(
+            year == 2021,
+            site == 'NC Botanical Garden') %>% 
+          drop_na(mean_mass) %>% 
+          pull(mean_mass)
+        /max(
+          comp_data_r3 %>% 
+            filter(
+              year == 2021,
+              site == 'NC Botanical Garden') %>% 
+            pull(meanBiomass)))), 
+      name = 'Mean Caterpillar Biomass')) +
   geom_point(
     data = comp_data_r3%>% 
       filter(
@@ -47,7 +61,7 @@ ggplot(
         site == 'NC Botanical Garden'),
     mapping = aes(
       x = julianweek,
-      y = meanBiomass*5),
+      y = meanBiomass*(max(mean_mass[!is.na(mean_mass)]/max(meanBiomass)))),
     color = 'blue') +
   geom_line(
     data = comp_data_r3%>% 
@@ -56,7 +70,7 @@ ggplot(
         site == 'NC Botanical Garden'),
     mapping = aes(
       x = julianweek,
-      y = meanBiomass*5),
+      y = meanBiomass*(max(mean_mass[!is.na(mean_mass)]/max(meanBiomass)))),
     color = 'blue')
 
 # next steps ------------------------------------
