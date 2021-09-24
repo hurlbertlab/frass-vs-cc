@@ -75,6 +75,7 @@ ggplot(
 
 # next steps ------------------------------------
 
+# separate data frames by year and site for simpler comparison code - it's disgusting right now since the comp_data has to be subset
+# raw correlation between frass and cc data
 # check for correlation between frass measurements with different reliabilities - must account for differences between years - for both mass and number
 # generate overlayed plots for frass and CC
-# raw correlation between frass and cc data - which variables?
