@@ -1,12 +1,6 @@
 
 source('scripts/session_setup.R')
 
-
-## next steps:
-# compare frass plots with different reliability levels - mass and number
-# generate side-by-side figures for frass and cc - may require modifying cc function for compatibility
-# raw correlation between frass and cc data
-
 # component custom functions ----------------------------------------------
 
 # Function for calculating the mode of a series of values
