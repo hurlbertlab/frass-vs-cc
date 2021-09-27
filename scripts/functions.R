@@ -224,7 +224,7 @@ combinedByWeek = function(
       year = year)
   
   cc_stats %>% 
-    left_join(
+    full_join(
       frass_stats,
       by = c(
         'julianweek' = 'julianWeek',
