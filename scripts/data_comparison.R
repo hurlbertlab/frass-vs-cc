@@ -34,15 +34,21 @@ comp_plot = function(
   cc_var # 'meanBiomass', 'meanDensity', or 'fracSurveys'
 ){
   
-  temp <- extract_stats(data = Data, Site = Site, Year = Year)
+  temp <- 
+    extract_stats(
+      data = Data,
+      Site = Site,
+      Year = Year)
+  
+  temp_frass <- drop_na(temp, frass_var)
+  
+  temp_cc <- drop_na(temp, cc_var)
   
   coeff <- 
-    temp %>% 
-    drop_na(frass_var) %>% 
+    temp_frass %>% 
     pull(frass_var) %>% 
     max() /
-    Data %>% 
-    drop_na(cc_var) %>% 
+    temp_cc %>% 
     pull(cc_var) %>% 
     max()
 
@@ -51,46 +57,41 @@ comp_plot = function(
       temp %>% pull(cc_var) ~ temp %>% pull(frass_var))
 
   summary(model)
-  
-  typeof(temp[[frass_var]])
-  
-  ggplot(
-    data = temp %>%
-      drop_na(frass_var),
+
+ggplot(
+  data = temp_frass,
+  mapping = aes_string(
+    x = 'julianweek',
+    y = frass_var)) +
+  geom_point(color = 'forestgreen') +
+  geom_line(color = 'forestgreen') +
+  scale_y_continuous(
+    name = case_when(
+      frass_var == 'mean_mass' ~ 'Mean Mass of Frass',
+      frass_var == 'mean_number' ~ 'Mean Number of Frass Pieces'),
+    sec.axis = sec_axis(
+      trans = ~./coeff,
+      name = case_when(
+        cc_var == 'meanBiomass' ~ 'Mean Caterpillar Biomass',
+        cc_var == 'meanDensity' ~ 'Mean Density of Caterpillars',
+        cc_var == 'fracSurveys' ~ 'Fraction of Surveys with Caterpillars'))) +
+  geom_point(
+    data = temp_cc,
     mapping = aes(
       x = julianweek,
-      y = drop_na(temp, frass_var)[[frass_var]])) + # you gotta do something about this - maybe rewrite data frame at opening of function?
-    geom_point(color = 'forestgreen') +
-    geom_line(color = 'forestgreen') #+
-#     scale_y_continuous(
-#       name = case_when(
-#         frass_var == 'mean_mass' ~ 'Mean Mass of Frass',
-#         frass_var == 'mean_number' ~ 'Mean Number of Frass Pieces'),
-#       sec.axis = sec_axis(
-#         trans = ~./coeff,
-#         name = case_when(
-#           cc_var == 'meanBiomass' ~ 'Mean Caterpillar Biomass',
-#           cc_var == 'meanDensity' ~ 'Mean Density of Caterpillars',
-#           cc_var == 'fracSurveys' ~ 'Fraction of Surveys with Caterpillars'))) +
-    # geom_point(
-    #   data = temp %>%
-    #     drop_na(cc_var),
-    #   mapping = aes(
-    #     x = julianweek,
-    #     y = cc_var*coeff),
-    #   color = 'blue') +
-    # geom_line(
-    #   data = temp %>%
-    #     drop_na(cc_var),
-    #   mapping = aes(
-    #     x = julianweek,
-    #     y = cc_var*coeff),
-    #   color = 'blue') +
-    # theme(
-    #   axis.title.y.left = element_text(color = 'forestgreen'),
-    #   axis.text.y.left = element_text(color = 'forestgreen'),
-    #   axis.title.y.right = element_text(color = 'blue'),
-    #   axis.text.y.right = element_text(color = 'blue'))
+      y = .data[[cc_var]]*coeff),
+    color = 'blue') +
+  geom_line(
+    data = temp_cc,
+    mapping = aes(
+      x = julianweek,
+      y = .data[[cc_var]]*coeff),
+    color = 'blue') +
+  theme(
+    axis.title.y.left = element_text(color = 'forestgreen'),
+    axis.text.y.left = element_text(color = 'forestgreen'),
+    axis.title.y.right = element_text(color = 'blue'),
+    axis.text.y.right = element_text(color = 'blue'))
 }
 
 # raw correlation ---------------------------------------------------------
