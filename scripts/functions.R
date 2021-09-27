@@ -24,6 +24,18 @@ mutate_cond <- function(.data, condition, ..., envir = parent.frame()) {
   .data
 }
 
+
+# data extraction functions -----------------------------------------------
+
+# function for extracting by-week summary statistics from a single site and year
+
+extract_stats = function(data, Site, Year){
+  data %>% 
+    filter(
+      year == Year,
+      site == Site)
+  }
+
 # frass analysis -------------------------------------------------------------------
 
 meanFrassByWeek = function(
