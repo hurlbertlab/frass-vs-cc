@@ -35,10 +35,10 @@ comp_plot = function(
 ){
   
   temp <- 
-    extract_stats(
-      data = Data,
-      Site = Site,
-      Year = Year)
+    Data %>% 
+    filter(
+      site == Site,
+      year == Year)
   
   temp_frass <- drop_na(temp, frass_var)
   
@@ -52,11 +52,7 @@ comp_plot = function(
     pull(cc_var) %>% 
     max()
 
-  model <-
-    lm(
-      temp %>% pull(cc_var) ~ temp %>% pull(frass_var))
-
-  summary(model)
+  model <- lm(temp %>% pull(cc_var) ~ temp %>% pull(frass_var))
 
 ggplot(
   data = temp_frass,
@@ -98,10 +94,10 @@ ggplot(
 
 lm(
   meanBiomass ~ mean_mass,
-  data = extract_stats(comp_data_r3, 'NC Botanical Garden', 2021)) %>% summary()
+  data = filter(comp_data_r3, site == 'NC Botanical Garden', year == 2021)) %>% summary()
 
 ggplot(
-  data = extract_stats(comp_data_r3, 'NC Botanical Garden', 2021),
+  data = filter(comp_data_r3, site == 'NC Botanical Garden', year == 2021),
   mapping = aes(
     x = mean_mass,
     y = meanBiomass)) +
@@ -111,7 +107,7 @@ ggplot(
 # plot data together ------------------------------------------------------
 
 ggplot(
-  data = extract_stats(comp_data_r3, 'NC Botanical Garden', 2021) %>% 
+  data = filter(comp_data_r3, site == 'NC Botanical Garden', year == 2021) %>% 
     drop_na(mean_mass),
   mapping = aes(
     x = julianweek,
@@ -122,11 +118,11 @@ ggplot(
     name = 'Mean Frass Mass',
     sec.axis = sec_axis(
       ~./(max(
-        extract_stats(comp_data_r3, 'NC Botanical Garden', 2021) %>% 
+        filter(comp_data_r3, site == 'NC Botanical Garden', year == 2021) %>% 
           drop_na(mean_mass) %>% 
           pull(mean_mass)
         /max(
-          extract_stats(comp_data_r3, 'NC Botanical Garden', 2021) %>% 
+          filter(comp_data_r3, site =='NC Botanical Garden', year == 2021) %>% 
             pull(meanBiomass)))), 
       name = 'Mean Caterpillar Biomass')) +
   geom_point(
