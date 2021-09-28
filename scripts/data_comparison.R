@@ -138,61 +138,9 @@ comp_plot = function(
         sep = ' '))
 }
 
-# raw correlation ---------------------------------------------------------
-
-lm(
-  meanBiomass ~ mean_mass,
-  data = filter(comp_data_r3, site == 'NC Botanical Garden', year == 2021)) %>% summary()
-
-ggplot(
-  data = filter(comp_data_r3, site == 'NC Botanical Garden', year == 2021),
-  mapping = aes(
-    x = mean_mass,
-    y = meanBiomass)) +
-  geom_point() +
-  geom_smooth(method = 'lm')
-
-# plot data together ------------------------------------------------------
-
-ggplot(
-  data = filter(comp_data_r3, site == 'NC Botanical Garden', year == 2021) %>% 
-    drop_na(mean_mass),
-  mapping = aes(
-    x = julianweek,
-    y = mean_mass)) +
-  geom_point(color = 'forestgreen') +
-  geom_line(color = 'forestgreen') +
-  scale_y_continuous(
-    name = 'Mean Frass Mass',
-    sec.axis = sec_axis(
-      ~./(max(
-        filter(comp_data_r3, site == 'NC Botanical Garden', year == 2021) %>% 
-          drop_na(mean_mass) %>% 
-          pull(mean_mass)
-        /max(
-          filter(comp_data_r3, site =='NC Botanical Garden', year == 2021) %>% 
-            pull(meanBiomass)))), 
-      name = 'Mean Caterpillar Biomass')) +
-  geom_point(
-    data = extract_stats(comp_data_r3, 'NC Botanical Garden', 2021),
-    mapping = aes(
-      x = julianweek,
-      y = meanBiomass*(max(mean_mass[!is.na(mean_mass)]/max(meanBiomass)))), # when you make a custom plotting function, assign a name to this garbage monster
-    color = 'blue') +
-  geom_line(
-    data = extract_stats(comp_data_r3, 'NC Botanical Garden', 2021),
-    mapping = aes(
-      x = julianweek,
-      y = meanBiomass*(max(mean_mass[!is.na(mean_mass)]/max(meanBiomass)))),
-    color = 'blue') +
-  theme(
-    axis.title.y.left = element_text(color = 'forestgreen'),
-    axis.text.y.left = element_text(color = 'forestgreen'),
-    axis.title.y.right = element_text(color = 'blue'),
-    axis.text.y.right = element_text(color = 'blue'))
 
 # next steps ------------------------------------
 
-# raw correlation between frass and cc data
+# create loops and Rmd to display all comparisons
 # check for correlation between frass measurements with different reliabilities - must account for differences between years - for both mass and number
 # generate overlayed plots for frass and CC
