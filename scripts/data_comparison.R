@@ -9,6 +9,8 @@ source('scripts/functions.R')
 
 library(ggplot2)
 
+library(ggpubr)
+
 # read in data
 
 comp_data_r1 <- 
@@ -51,43 +53,89 @@ comp_plot = function(
     temp_cc %>% 
     pull(cc_var) %>% 
     max()
-
+  
   model <- lm(temp %>% pull(cc_var) ~ temp %>% pull(frass_var))
+  
+  cc_var_name <- case_when(
+    cc_var == 'meanBiomass' ~ 'Mean Caterpillar Biomass',
+    cc_var == 'meanDensity' ~ 'Mean Density of Caterpillars',
+    cc_var == 'fracSurveys' ~ 'Fraction of Surveys with Caterpillars')
+  
+  frass_var_name <- case_when(
+    frass_var == 'mean_mass' ~ 'Mean Mass of Frass',
+    frass_var == 'mean_number' ~ 'Mean Number of Frass Pieces')
+  
+  byweekplot <-
+    ggplot(
+      data = temp_frass,
+      mapping = aes_string(
+        x = 'julianweek',
+        y = frass_var)) +
+    geom_point(color = 'forestgreen') +
+    geom_line(color = 'forestgreen') +
+    scale_y_continuous(
+      name = frass_var_name,
+      sec.axis = sec_axis(
+        trans = ~./coeff,
+        name = cc_var_name)) +
+    geom_point(
+      data = temp_cc,
+      mapping = aes(
+        x = julianweek,
+        y = .data[[cc_var]]*coeff),
+      color = 'blue') +
+    geom_line(
+      data = temp_cc,
+      mapping = aes(
+        x = julianweek,
+        y = .data[[cc_var]]*coeff),
+      color = 'blue') +
+    theme(
+      axis.title.y.left = element_text(color = 'forestgreen'),
+      axis.text.y.left = element_text(color = 'forestgreen'),
+      axis.title.y.right = element_text(color = 'blue'),
+      axis.text.y.right = element_text(color = 'blue'))
 
-ggplot(
-  data = temp_frass,
-  mapping = aes_string(
-    x = 'julianweek',
-    y = frass_var)) +
-  geom_point(color = 'forestgreen') +
-  geom_line(color = 'forestgreen') +
-  scale_y_continuous(
-    name = case_when(
-      frass_var == 'mean_mass' ~ 'Mean Mass of Frass',
-      frass_var == 'mean_number' ~ 'Mean Number of Frass Pieces'),
-    sec.axis = sec_axis(
-      trans = ~./coeff,
-      name = case_when(
-        cc_var == 'meanBiomass' ~ 'Mean Caterpillar Biomass',
-        cc_var == 'meanDensity' ~ 'Mean Density of Caterpillars',
-        cc_var == 'fracSurveys' ~ 'Fraction of Surveys with Caterpillars'))) +
-  geom_point(
-    data = temp_cc,
-    mapping = aes(
-      x = julianweek,
-      y = .data[[cc_var]]*coeff),
-    color = 'blue') +
-  geom_line(
-    data = temp_cc,
-    mapping = aes(
-      x = julianweek,
-      y = .data[[cc_var]]*coeff),
-    color = 'blue') +
-  theme(
-    axis.title.y.left = element_text(color = 'forestgreen'),
-    axis.text.y.left = element_text(color = 'forestgreen'),
-    axis.title.y.right = element_text(color = 'blue'),
-    axis.text.y.right = element_text(color = 'blue'))
+  correlationplot <-
+    ggplot(
+      data = temp,
+      mapping = aes_string(
+        x = frass_var,
+        y = cc_var)) +
+    geom_point() +
+    geom_smooth(method = 'lm')
+
+  ggarrange(
+      byweekplot, correlationplot,
+      labels = c(
+        paste(
+          frass_var_name,
+          'and',
+          cc_var_name,
+          'by Week',
+          sep = ' '),
+        paste(
+          cc_var_name,
+          'vs',
+          frass_var_name,
+          sep = ' ')),
+      nrow = 2) %>%
+    annotate_figure(
+      top = text_grob(
+        paste(
+          frass_var_name,
+          'and',
+          cc_var_name,
+          'for',
+          Site,
+          'in',
+          as.character(Year)),
+        face = 'bold',
+        size = 18),
+      bottom = paste(
+        'R^2 =',
+        as.character(round(summary(model)$r.squared, 4)),
+        sep = ' '))
 }
 
 # raw correlation ---------------------------------------------------------
