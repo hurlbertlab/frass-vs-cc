@@ -5,6 +5,8 @@ date: "9/29/2021"
 output: html_document
 ---
 
+**Please make sure R Markdown in your global settings is set to evaluate code chunks in the PROJECT directory.**
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 source('scripts/data_comparison.R')
