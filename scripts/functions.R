@@ -224,7 +224,7 @@ combinedByWeek = function(
 # generate a data frame with by-week stats from all years and sites
 
 summary_stats = function(
-  years = 2018:year(today()),
+  years = 2015:year(today()),
   sites = c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
   frass_rel = 2,
   write = F,
