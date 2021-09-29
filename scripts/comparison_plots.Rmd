@@ -1,0 +1,156 @@
+---
+title: "Comparison Plots"
+author: "Indigo Edwards"
+date: "9/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source('scripts/data_comparison.R')
+```
+
+## NC Botanical Garden 2021
+
+**Reliability 3**
+
+Highest R^2^ values: 
+
+0.0808 for number of frass and caterpillar biomass
+
+0.0398 for mass of frass and caterpillar biomass
+
+```{r NCBG 2021 rel3, message = FALSE, echo = FALSE, warning = FALSE}
+map(
+  c('mean_mass', 'mean_number'),
+  function(x){
+    map(
+      c('meanBiomass', 'meanDensity', 'fracSurveys'),
+      function(y) {
+        comp_plot(
+          Data = comp_data_r3,
+          Site = 'NC Botanical Garden',
+          Year = 2021,
+          frass_var = x,
+          cc_var = y)
+      }
+    )
+  }
+)
+```
+
+**Reliability 2**
+
+Highest R^2^ values:
+
+0.0728 for number of frass and caterpillar biomass
+
+0.0353 for mass of frass and caterpillar biomass
+
+```{r NCBG 2021 rel2, message = FALSE, echo = FALSE, warning = FALSE}
+map(
+  c('mean_mass', 'mean_number'),
+  function(x){
+    map(
+      c('meanBiomass', 'meanDensity', 'fracSurveys'),
+      function(y) {
+        comp_plot(
+          Data = comp_data_r2,
+          Site = 'NC Botanical Garden',
+          Year = 2021,
+          frass_var = x,
+          cc_var = y)
+      }
+    )
+  }
+)
+```
+
+## Prairie Ridge Ecostation 2021
+
+**Reliability 3**
+
+Highest R^2^ values:
+
+0.3092 for frass mass and caterpillar biomass
+
+0.1677 for frass number and caterpillar biomass
+
+```{r PR 2021 rel3, message = FALSE, echo = FALSE, warning = FALSE}
+map(
+  c('mean_mass', 'mean_number'),
+  function(x){
+    map(
+      c('meanBiomass', 'meanDensity', 'fracSurveys'),
+      function(y) {
+        comp_plot(
+          Data = comp_data_r3,
+          Site = 'Prairie Ridge Ecostation',
+          Year = 2021,
+          frass_var = x,
+          cc_var = y)
+      }
+    )
+  }
+)
+```
+
+## NC Botanical Garden 2018
+
+**Reliability 3**
+
+*Data from 2018 have dramatically higher R^2^ values than data from 2021.*
+
+Highest R^2^ values:
+
+0.6101 for frass mass and caterpillar biomass
+
+0.6345 for frass number and caterpillar biomass
+
+```{r NCBG 2018 rel3, message = FALSE, echo = FALSE, warning = FALSE}
+map(
+  c('mean_mass', 'mean_number'),
+  function(x){
+    map(
+      c('meanBiomass', 'meanDensity', 'fracSurveys'),
+      function(y) {
+        comp_plot(
+          Data = comp_data_r3,
+          Site = 'NC Botanical Garden',
+          Year = 2018,
+          frass_var = x,
+          cc_var = y)
+      }
+    )
+  }
+)
+```
+
+## Prairie Ridge Ecostation 2018
+
+**Reliability 3**
+
+Highest R^2^ values:
+
+0.8555 for frass number and caterpillar density
+
+0.8679 for frass number and caterpillar biomass
+
+```{r PR 2018 rel3, message = FALSE, echo = FALSE, warning = FALSE}
+map(
+  c('mean_mass', 'mean_number'),
+  function(x){
+    map(
+      c('meanBiomass', 'meanDensity', 'fracSurveys'),
+      function(y) {
+        comp_plot(
+          Data = comp_data_r3,
+          Site = 'Prairie Ridge Ecostation',
+          Year = 2018,
+          frass_var = x,
+          cc_var = y)
+      }
+    )
+  }
+)
+```

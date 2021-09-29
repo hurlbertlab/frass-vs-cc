@@ -107,31 +107,24 @@ comp_plot = function(
 
   ggarrange(
       byweekplot, correlationplot,
-      labels = c(
-        paste(
-          frass_var_name,
-          'and',
-          cc_var_name,
-          'by Week',
-          sep = ' '),
-        paste(
-          cc_var_name,
-          'vs',
-          frass_var_name,
-          sep = ' ')),
       nrow = 2) %>%
     annotate_figure(
       top = text_grob(
         paste(
-          frass_var_name,
-          'and',
-          cc_var_name,
-          'for',
-          Site,
-          'in',
-          as.character(Year)),
+          paste(
+            frass_var_name,
+            'and',
+            cc_var_name,
+            sep = ' '),
+          paste(
+            'for',
+            Site,
+            'in',
+            as.character(Year),
+            sep = ' '),
+          sep = '\n'),
         face = 'bold',
-        size = 18),
+        size = 14),
       bottom = paste(
         'R^2 =',
         as.character(round(summary(model)$r.squared, 4)),
@@ -141,6 +134,4 @@ comp_plot = function(
 
 # next steps ------------------------------------
 
-# create loops and Rmd to display all comparisons
-# check for correlation between frass measurements with different reliabilities - must account for differences between years - for both mass and number
-# generate overlayed plots for frass and CC
+# do we want to do outlier exclusion for individual giant caterpillars?
