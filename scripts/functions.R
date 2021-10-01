@@ -180,7 +180,7 @@ meanDensityByWeek = function(
 # combine frass and cc by week stats for a year and site
 
 combinedByWeek = function(
-  year, # 2017-2021
+  year, # 2015-2021
   site, # 'NC Botanical Garden' or 'Prairie Ridge Ecostation'
   jdRange = c(1,365), # range of Julian days to analyze
   frass_data, # data frame suitable for frass by week analysis
@@ -222,6 +222,8 @@ combinedByWeek = function(
 }
 
 # generate a data frame with by-week stats from all years and sites
+
+# running summary_stats will almost always return an error about 'no non-missing arguments to max' - this is fine, it occurs because there are weeks where only CC or only frass data exists
 
 summary_stats = function(
   years = 2015:year(today()),

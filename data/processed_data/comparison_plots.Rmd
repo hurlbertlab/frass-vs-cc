@@ -5,17 +5,6 @@ date: "9/29/2021"
 output: html_document
 ---
 
-Next steps: 
-
-1. run code to add dates back to 2015 to summary datasets
-1. review papers from UK and Netherlands for comparisons between frass and caterpillar surveys
-1. look for papers citing Fischbacher et al. 1998
-1. create visual comparison plots for comparing reliabilty 2 and 3 frass data - 2 columns of panels - 1 PR, 1 NCBG, each row is a year, each plot has both reliability options by week - include correlation between reliability options
-1. generate weighted average julian week for frass - mean for each data point: sum(x_i_ * y_i_)/sum(x_i_)
-1. clean up list labeling on R Markdown
-1. compile by week plots into single plot for each frass variable, site, and year combination, in a 2x2 panel with all of the correlation plots
-1. convert values to value/max(year, site) so they can all be plotted on the same axis with a legend
-
 **Please make sure R Markdown in your global settings is set to evaluate code chunks in the PROJECT directory.**
 
 ```{r setup, include=FALSE}

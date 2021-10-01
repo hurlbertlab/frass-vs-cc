@@ -15,18 +15,18 @@ library(ggpubr)
 
 comp_data_r1 <- 
   read_csv(
-    'data/processed_data/weekly_stats_2018-2021_rel1.csv')
+    'data/processed_data/weekly_stats_2015-2021_rel1.csv')
 
 comp_data_r2 <- 
   read_csv(
-    'data/processed_data/weekly_stats_2018-2021_rel2.csv')
+    'data/processed_data/weekly_stats_2015-2021_rel2.csv')
 
 comp_data_r3 <- 
   read_csv(
-    'data/processed_data/weekly_stats_2018-2021_rel3.csv')
+    'data/processed_data/weekly_stats_2015-2021_rel3.csv')
 
 
-# big boy plotting function -----------------------------------------------
+# plot to compare a cc variable and a frass variable -----------------------------------------------
 
 comp_plot = function(
   Data,
@@ -132,6 +132,101 @@ comp_plot = function(
 }
 
 
-# next steps ------------------------------------
 
-# do we want to do outlier exclusion for individual giant caterpillars?
+# comparing by reliability ------------------------------------------------
+mm_list <- 
+  map(
+    c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
+    function(y){
+      map(
+        c(2015:2019, 2021),
+        function(x){
+          ggplot(
+            data = comp_data_r3 %>% 
+              filter(
+                site == y,
+                year == x) %>% 
+              drop_na(mean_mass),
+            mapping = aes(
+              x = julianweek,
+              y = mean_mass)) +
+            geom_point(color = 'forestgreen') +
+            geom_line(color = 'forestgreen') +
+            geom_point(
+              data = comp_data_r2 %>% 
+                filter(
+                  site == y,
+                  year == x) %>% 
+                drop_na(mean_mass),
+              color = 'red') +
+            geom_line(
+              data = comp_data_r2%>% 
+                filter(
+                  site == y,
+                  year == x) %>% 
+                drop_na(mean_mass),
+              color = 'red') +
+            labs(
+              tag = 
+                paste(
+                  'R^2 = ',
+                  summary(lm(
+                    (comp_data_r3 %>% 
+                       filter(
+                         site == y,
+                         year == x))$mean_mass ~
+                      (comp_data_r2 %>% 
+                         filter(
+                           site == y,
+                           year == x))$mean_mass))$r.squared %>% 
+                      round(4),
+                  sep = '')) +
+            theme(
+              plot.tag.position = c(0.2,0.9))
+        })
+    })
+
+mm_combo <- c(mm_list[[1]], mm_list[[2]])
+
+ggplot(
+  data = comp_data_r3 %>% 
+    filter(
+      site == 'NC Botanical Garden',
+      year == 2021) %>% 
+    drop_na(mean_mass),
+  mapping = aes(
+    x = julianweek,
+    y = mean_mass)) +
+  geom_point(color = 'forestgreen') +
+  geom_line(color = 'forestgreen') +
+  geom_point(
+    data = comp_data_r2 %>% 
+      filter(
+        site == 'NC Botanical Garden',
+        year == 2021) %>% 
+      drop_na(mean_mass),
+    color = 'red') +
+  geom_line(
+    data = comp_data_r2%>% 
+      filter(
+        site == 'NC Botanical Garden',
+        year == 2021) %>% 
+      drop_na(mean_mass),
+    color = 'red') +
+  labs(
+    tag = 
+      paste(
+        'R^2 = ',
+        summary(lm(
+          (comp_data_r3 %>% 
+             filter(
+               site == 'NC Botanical Garden',
+               year == 2021))$mean_mass ~
+            (comp_data_r2 %>% 
+               filter(
+                 site == 'NC Botanical Garden',
+                 year == 2021))$mean_mass))$r.squared %>% 
+          round(4),
+        sep = '')) +
+  theme(
+    plot.tag.position = c(0.2,0.9))

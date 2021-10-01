@@ -1,0 +1,98 @@
+---
+title: "Comparing Reliability"
+author: "Indigo Edwards"
+date: "10/1/2021"
+output: html_document
+---
+
+Next steps: 
+
+1. fix plots list so it's all 6 NCBG then all 6 PR
+1. figure out how to silence error in R^2^ tag when PR data doesn't exist
+1. decide on display format of plot chart
+1. label plot chart
+1. run a plot chart for mean number
+1. review papers from UK and Netherlands for comparisons between frass and caterpillar surveys
+1. look for papers citing Fischbacher et al. 1998
+1. create visual comparison plots for comparing reliability 2 and 3 frass data - 2 columns of panels - 1 PR, 1 NCBG, each row is a year, each plot has both reliability options by week - include correlation between reliability options
+1. generate weighted average julian week for frass - mean for each data point: sum(x_i_ * y_i_)/sum(x_i_)
+1. clean up list labeling on R Markdown
+1. compile by week plots into single plot for each frass variable, site, and year combination, in a 2x2 panel with all of the correlation plots
+1. convert values to value/max(year, site) so they can all be plotted on the same axis with a legend
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source('scripts/functions.R')
+library(ggplot2)
+library(ggpubr)
+comp_data_r1 <- 
+  read_csv(
+    'data/processed_data/weekly_stats_2015-2021_rel1.csv')
+comp_data_r2 <- 
+  read_csv(
+    'data/processed_data/weekly_stats_2015-2021_rel2.csv')
+comp_data_r3 <- 
+  read_csv(
+    'data/processed_data/weekly_stats_2015-2021_rel3.csv')
+```
+
+## R Markdown
+
+```{r test plot, message = FALSE, echo = FALSE, warning = FALSE}
+mm_list <- 
+  map(
+    c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
+    function(y){
+      map(
+        c(2015:2019, 2021),
+        function(x){
+          ggplot(
+            data = comp_data_r3 %>% 
+              filter(
+                site == y,
+                year == x) %>% 
+              drop_na(mean_mass),
+            mapping = aes(
+              x = julianweek,
+              y = mean_mass)) +
+            geom_point(color = 'forestgreen') +
+            geom_line(color = 'forestgreen') +
+            geom_point(
+              data = comp_data_r2 %>% 
+                filter(
+                  site == y,
+                  year == x) %>% 
+                drop_na(mean_mass),
+              color = 'red') +
+            geom_line(
+              data = comp_data_r2%>% 
+                filter(
+                  site == y,
+                  year == x) %>% 
+                drop_na(mean_mass),
+              color = 'red') +
+            labs(
+              tag = 
+                paste(
+                  'R^2 = ',
+                  summary(lm(
+                    (comp_data_r3 %>% 
+                       filter(
+                         site == y,
+                         year == x))$mean_mass ~
+                      (comp_data_r2 %>% 
+                         filter(
+                           site == y,
+                           year == x))$mean_mass))$r.squared %>% 
+                      round(4),
+                  sep = '')) +
+            theme(
+              plot.tag.position = c(0.2,0.9))
+        })
+    })
+
+mm_combo <- c(mm_list[[1]], mm_list[[2]])
+
+ggarrange(plotlist = mm_combo, ncol = 2)
+```
+
