@@ -7,21 +7,18 @@ output: html_document
 
 Next steps: 
 
-1. fix plots list so it's all 6 NCBG then all 6 PR
-1. figure out how to silence error in R^2^ tag when PR data doesn't exist
-1. decide on display format of plot chart
-1. label plot chart
+1. generate weighted average julian week for frass - mean for each data point: sum(x_i_ * y_i_)/sum(x_i_)
 1. run a plot chart for mean number
 1. review papers from UK and Netherlands for comparisons between frass and caterpillar surveys
 1. look for papers citing Fischbacher et al. 1998
-1. create visual comparison plots for comparing reliability 2 and 3 frass data - 2 columns of panels - 1 PR, 1 NCBG, each row is a year, each plot has both reliability options by week - include correlation between reliability options
-1. generate weighted average julian week for frass - mean for each data point: sum(x_i_ * y_i_)/sum(x_i_)
 1. clean up list labeling on R Markdown
 1. compile by week plots into single plot for each frass variable, site, and year combination, in a 2x2 panel with all of the correlation plots
 1. convert values to value/max(year, site) so they can all be plotted on the same axis with a legend
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+knitr::opts_chunk$set(fig.width = 12, fig.height = 12)
 source('scripts/functions.R')
 library(ggplot2)
 library(ggpubr)
@@ -36,7 +33,7 @@ comp_data_r3 <-
     'data/processed_data/weekly_stats_2015-2021_rel3.csv')
 ```
 
-## R Markdown
+$$\\[1in]$$
 
 ```{r test plot, message = FALSE, echo = FALSE, warning = FALSE}
 mm_list <- 
@@ -54,28 +51,28 @@ mm_list <-
               drop_na(mean_mass),
             mapping = aes(
               x = julianweek,
-              y = mean_mass)) +
-            geom_point(color = 'forestgreen') +
-            geom_line(color = 'forestgreen') +
+              y = mean_mass,
+              color = factor(reliability))) +
+            geom_point() +
+            geom_line() +
             geom_point(
               data = comp_data_r2 %>% 
                 filter(
                   site == y,
                   year == x) %>% 
-                drop_na(mean_mass),
-              color = 'red') +
+                drop_na(mean_mass)) +
             geom_line(
               data = comp_data_r2%>% 
                 filter(
                   site == y,
                   year == x) %>% 
-                drop_na(mean_mass),
-              color = 'red') +
+                drop_na(mean_mass)) +
             labs(
+              color = 'Reliability',
               tag = 
                 paste(
                   'R^2 = ',
-                  summary(lm(
+                  tryCatch(summary(lm(
                     (comp_data_r3 %>% 
                        filter(
                          site == y,
@@ -85,14 +82,182 @@ mm_list <-
                            site == y,
                            year == x))$mean_mass))$r.squared %>% 
                       round(4),
+                    error = function(c){return(paste(''))}),
                   sep = '')) +
             theme(
-              plot.tag.position = c(0.2,0.9))
+              plot.tag.position = c(0.2,0.8),
+              axis.title.x = element_blank(),
+              axis.title.y = element_blank()) +
+            scale_color_manual(values = c('forestgreen', 'red'))
         })
     })
 
-mm_combo <- c(mm_list[[1]], mm_list[[2]])
+ncbg_mass_temp <- 
+  ggarrange(
+    plotlist = mm_list[[1]], 
+    ncol = 1,
+    labels = c(2015, 2016, 2017, 2018, 2019, 2021),
+    hjust = 1.2,
+    vjust = 5,
+    legend = 'none') +
+  theme(plot.margin = margin(0.1, 0.1, 0.1, 2, 'cm'))
+  
+ncbg_mass_plots <- 
+  annotate_figure(
+    ncbg_mass_temp,
+    top = text_grob(
+      'NC Botanical Garden',
+      face = 'bold',
+      size = 20),
+    left = text_grob(
+      'Mean Mass of Frass',
+      size = 16,
+      rot = 90))
 
-ggarrange(plotlist = mm_combo, ncol = 2)
+pr_mass_temp <- 
+  ggarrange(
+    plotlist = mm_list[[2]], 
+    ncol = 1,
+    hjust = 1,
+    vjust = 5,
+    legend = 'none')
+
+pr_mass_plots <- 
+  annotate_figure(
+    pr_mass_temp,
+    top = text_grob(
+      'Prairie Ridge Ecostation',
+      face = 'bold',
+      size = 20))
+
+ggarrange(
+  ncbg_mass_plots,
+  pr_mass_plots,
+  ncol = 2,
+  widths = c(1.1,1),
+  legend.grob = get_legend(mm_list[[1]][[1]])) %>% 
+  annotate_figure(
+    top = text_grob(
+      'Comparison by Reliability for Mean Mass of Frass',
+      size = 28,
+      face = 'bold'),
+    bottom = text_grob(
+      'Julian Week',
+      size = 16))
 ```
+
+$$\\[1in]$$
+
+```{r test plot number, message = FALSE, echo = FALSE, warning = FALSE}
+mn_list <- 
+  map(
+    c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
+    function(y){
+      map(
+        c(2015:2019, 2021),
+        function(x){
+          ggplot(
+            data = comp_data_r3 %>% 
+              filter(
+                site == y,
+                year == x) %>% 
+              drop_na(mean_number),
+            mapping = aes(
+              x = julianweek,
+              y = mean_number,
+              color = factor(reliability))) +
+            geom_point() +
+            geom_line() +
+            geom_point(
+              data = comp_data_r2 %>% 
+                filter(
+                  site == y,
+                  year == x) %>% 
+                drop_na(mean_number)) +
+            geom_line(
+              data = comp_data_r2%>% 
+                filter(
+                  site == y,
+                  year == x) %>% 
+                drop_na(mean_number)) +
+            labs(
+              color = 'Reliability',
+              tag = 
+                paste(
+                  'R^2 = ',
+                  tryCatch(summary(lm(
+                    (comp_data_r3 %>% 
+                       filter(
+                         site == y,
+                         year == x))$mean_number ~
+                      (comp_data_r2 %>% 
+                         filter(
+                           site == y,
+                           year == x))$mean_number))$r.squared %>% 
+                      round(4),
+                    error = function(c){return(paste(''))}),
+                  sep = '')) +
+            theme(
+              plot.tag.position = c(0.2,0.8),
+              axis.title.x = element_blank(),
+              axis.title.y = element_blank()) +
+            scale_color_manual(values = c('forestgreen', 'red'))
+        })
+    })
+
+ncbg_number_temp <- 
+  ggarrange(
+    plotlist = mn_list[[1]], 
+    ncol = 1,
+    labels = c(2015, 2016, 2017, 2018, 2019, 2021),
+    hjust = 1.2,
+    vjust = 5,
+    legend = 'none') +
+  theme(plot.margin = margin(0.1, 0.1, 0.1, 2, 'cm'))
+  
+ncbg_number_plots <- 
+  annotate_figure(
+    ncbg_number_temp,
+    top = text_grob(
+      'NC Botanical Garden',
+      face = 'bold',
+      size = 20),
+    left = text_grob(
+      'Mean Number of Frass',
+      size = 16,
+      rot = 90))
+
+pr_number_temp <- 
+  ggarrange(
+    plotlist = mn_list[[2]], 
+    ncol = 1,
+    hjust = 1,
+    vjust = 5,
+    legend = 'none')
+
+pr_number_plots <- 
+  annotate_figure(
+    pr_number_temp,
+    top = text_grob(
+      'Prairie Ridge Ecostation',
+      face = 'bold',
+      size = 20))
+
+ggarrange(
+  ncbg_number_plots,
+  pr_number_plots,
+  ncol = 2,
+  widths = c(1.1,1),
+  legend.grob = get_legend(mn_list[[1]][[1]])) %>% 
+  annotate_figure(
+    top = text_grob(
+      'Comparison by Reliability for Mean Number of Frass',
+      size = 28,
+      face = 'bold'),
+    bottom = text_grob(
+      'Julian Week',
+      size = 16))
+```
+
+
 

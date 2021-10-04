@@ -254,7 +254,8 @@ summary_stats = function(
     relocate(
       site,
       year,
-      .before = julianweek)
+      .before = julianweek) %>% 
+    mutate(reliability = factor(frass_rel))
   
   if(write == T) {
     write_csv(
