@@ -7,8 +7,6 @@ output: html_document
 
 Next steps: 
 
-1. generate weighted average julian week for frass - mean for each data point: sum(x_i_ * y_i_)/sum(x_i_)
-1. run a plot chart for mean number
 1. review papers from UK and Netherlands for comparisons between frass and caterpillar surveys
 1. look for papers citing Fischbacher et al. 1998
 1. clean up list labeling on R Markdown
@@ -33,9 +31,11 @@ comp_data_r3 <-
     'data/processed_data/weekly_stats_2015-2021_rel3.csv')
 ```
 
+
+
 $$\\[1in]$$
 
-```{r test plot, message = FALSE, echo = FALSE, warning = FALSE}
+```{r mass plots, message = FALSE, echo = FALSE, warning = FALSE}
 mm_list <- 
   map(
     c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
@@ -43,44 +43,46 @@ mm_list <-
       map(
         c(2015:2019, 2021),
         function(x){
+          
+          c3 <- 
+            comp_data_r3 %>% 
+            filter(
+              site == y,
+              year == x)
+          
+          c2 <- 
+            comp_data_r2 %>% 
+            filter(
+              site == y,
+              year == x)
+          
           ggplot(
-            data = comp_data_r3 %>% 
-              filter(
-                site == y,
-                year == x) %>% 
-              drop_na(mean_mass),
+            data = c3 %>% drop_na(mean_mass),
             mapping = aes(
               x = julianweek,
               y = mean_mass,
               color = factor(reliability))) +
             geom_point() +
             geom_line() +
-            geom_point(
-              data = comp_data_r2 %>% 
-                filter(
-                  site == y,
-                  year == x) %>% 
-                drop_na(mean_mass)) +
-            geom_line(
-              data = comp_data_r2%>% 
-                filter(
-                  site == y,
-                  year == x) %>% 
-                drop_na(mean_mass)) +
+            geom_vline(
+              xintercept = sum(c3$julianweek * c3$mean_mass, na.rm = T) /
+                sum(c3$mean_mass, na.rm = T),
+              linetype = 'dashed',
+              color = 'red') +
+            geom_point(data = c2 %>% drop_na(mean_mass)) +
+            geom_line(data = c2 %>% drop_na(mean_mass)) +
+            geom_vline(
+              xintercept = sum(c2$julianweek * c2$mean_mass, na.rm = T) /
+                sum(c2$mean_mass, na.rm = T),
+              linetype = 'dashed',
+              color = 'forestgreen') +
             labs(
               color = 'Reliability',
               tag = 
                 paste(
                   'R^2 = ',
-                  tryCatch(summary(lm(
-                    (comp_data_r3 %>% 
-                       filter(
-                         site == y,
-                         year == x))$mean_mass ~
-                      (comp_data_r2 %>% 
-                         filter(
-                           site == y,
-                           year == x))$mean_mass))$r.squared %>% 
+                  tryCatch(
+                    summary(lm(c3$mean_mass ~ c2$mean_mass))$r.squared %>% 
                       round(4),
                     error = function(c){return(paste(''))}),
                   sep = '')) +
@@ -148,7 +150,7 @@ ggarrange(
 
 $$\\[1in]$$
 
-```{r test plot number, message = FALSE, echo = FALSE, warning = FALSE}
+```{r number plots, message = FALSE, echo = FALSE, warning = FALSE}
 mn_list <- 
   map(
     c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
@@ -156,44 +158,44 @@ mn_list <-
       map(
         c(2015:2019, 2021),
         function(x){
-          ggplot(
-            data = comp_data_r3 %>% 
+          
+          c3 <- comp_data_r3 %>% 
               filter(
                 site == y,
-                year == x) %>% 
-              drop_na(mean_number),
+                year == x)
+          
+          c2 <- comp_data_r2 %>% 
+                filter(
+                  site == y,
+                  year == x)
+          
+          ggplot(
+            data = c3 %>% drop_na(mean_number),
             mapping = aes(
               x = julianweek,
               y = mean_number,
               color = factor(reliability))) +
             geom_point() +
             geom_line() +
-            geom_point(
-              data = comp_data_r2 %>% 
-                filter(
-                  site == y,
-                  year == x) %>% 
-                drop_na(mean_number)) +
-            geom_line(
-              data = comp_data_r2%>% 
-                filter(
-                  site == y,
-                  year == x) %>% 
-                drop_na(mean_number)) +
+            geom_vline(
+              xintercept = sum(c3$julianweek * c3$mean_number, na.rm = T) /
+                sum(c3$mean_number, na.rm = T),
+              linetype = 'dashed',
+              color = 'red') +
+            geom_point(data = c2 %>% drop_na(mean_number)) +
+            geom_line(data = c2 %>% drop_na(mean_number)) +
+            geom_vline(
+              xintercept = sum(c2$julianweek * c2$mean_mass, na.rm = T) /
+                sum(c2$mean_mass, na.rm = T),
+              linetype = 'dashed',
+              color = 'forestgreen') +
             labs(
               color = 'Reliability',
               tag = 
                 paste(
                   'R^2 = ',
-                  tryCatch(summary(lm(
-                    (comp_data_r3 %>% 
-                       filter(
-                         site == y,
-                         year == x))$mean_number ~
-                      (comp_data_r2 %>% 
-                         filter(
-                           site == y,
-                           year == x))$mean_number))$r.squared %>% 
+                  tryCatch(
+                    summary(lm(c3$mean_number ~ c2$mean_number))$r.squared %>% 
                       round(4),
                     error = function(c){return(paste(''))}),
                   sep = '')) +
