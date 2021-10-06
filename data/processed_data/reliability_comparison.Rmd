@@ -76,6 +76,7 @@ mm_list <-
                 sum(c2$mean_mass, na.rm = T),
               linetype = 'dashed',
               color = 'forestgreen') +
+            scale_x_continuous(breaks = c2 %>% pull(julianweek)) +
             labs(
               color = 'Reliability',
               tag = 
@@ -189,6 +190,7 @@ mn_list <-
                 sum(c2$mean_mass, na.rm = T),
               linetype = 'dashed',
               color = 'forestgreen') +
+            scale_x_continuous(breaks = c2 %>% pull(julianweek)) +
             labs(
               color = 'Reliability',
               tag = 
