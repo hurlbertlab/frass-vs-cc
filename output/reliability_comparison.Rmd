@@ -5,12 +5,6 @@ date: "10/1/2021"
 output: html_document
 ---
 
-Next steps: 
-
-1. review papers from UK and Netherlands for comparisons between frass and caterpillar surveys
-1. clean up list labeling on R Markdown
-1. compile by week plots into single plot for each frass variable, site, and year combination, in a 2x2 panel with all of the correlation plots
-1. convert values to value/max(year, site) so they can all be plotted on the same axis with a legend
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)

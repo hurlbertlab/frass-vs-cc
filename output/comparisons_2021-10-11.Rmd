@@ -1,0 +1,27 @@
+---
+title: "More Comparisons"
+author: "Indigo Edwards"
+date: "10/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+knitr::opts_chunk$set(fig.width = 12, fig.height = 12)
+source('scripts/functions.R')
+library(ggplot2)
+library(ggpubr)
+
+comp_data <- 
+  read_csv(
+    'data/processed_data/weekly_stats_2015-2021_rel2.csv')
+```
+
+```{r testing}
+comp_data %>% 
+  group_by(site, year) %>% 
+  mutate()
+```
+
+
