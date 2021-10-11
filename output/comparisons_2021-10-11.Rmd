@@ -5,6 +5,13 @@ date: "10/11/2021"
 output: html_document
 ---
 
+Next steps: 
+
+1. determine best method for putting R^2 values on correlation facets - package or other, individual formulas or something else, and better as plots or facets
+1. write map function to generate all plots
+1. review papers from UK and Netherlands for comparisons between frass and caterpillar surveys
+1. compile by week plots into single plot for each frass variable, site, and year combination, in a 2x2 panel with all of the correlation plots
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -18,10 +25,64 @@ comp_data <-
     'data/processed_data/weekly_stats_2015-2021_rel2.csv')
 ```
 
-```{r testing}
-comp_data %>% 
+```{r testing, warning = FALSE}
+weekly <- 
+  comp_data %>% 
   group_by(site, year) %>% 
-  mutate()
+  mutate(
+    across(c(meanDensity:meanBiomass, mean_mass:mean_number),
+           ~./max(., na.rm = T))) %>% 
+  filter(
+    year == 2021,
+    site == 'NC Botanical Garden') %>%
+  select(-mean_number) %>% 
+  pivot_longer(
+    cols = c(meanDensity:meanBiomass, mean_mass),
+    names_to = 'variable',
+    values_to = 'value') %>% 
+  mutate(variable = factor(
+    variable,
+    levels = c('mean_mass', 'meanBiomass', 'meanDensity', 'fracSurveys'),
+    labels = c('Mean Frass Mass', 'Mean Caterpillar Biomass', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+  ggplot(
+    aes(
+      x = julianweek,
+      y = value,
+      color = variable,
+      size = variable)) +
+  geom_line() +
+  scale_color_manual(
+    values = c('black', '#9D10EC', '#334EFF', '#DA0A10')) +
+  scale_size_manual(
+    values = c(1.5, 0.5, 0.5, 0.5))
+
+comps <- 
+  comp_data %>% 
+  filter(
+    year == 2021,
+    site == 'NC Botanical Garden') %>%
+  select(-mean_number) %>% 
+  pivot_longer(
+    cols = c(meanDensity:meanBiomass),
+    names_to = 'variable',
+    values_to = 'value') %>% 
+  mutate(variable = factor(
+    variable,
+    levels = c('mean_mass', 'meanBiomass', 'meanDensity', 'fracSurveys'),
+    labels = c('Mean Frass Mass', 'Mean Caterpillar Biomass', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+  ggplot(
+    aes(
+      x = mean_mass,
+      y = value,
+      color = variable)) +
+  geom_point() +
+  geom_smooth(method = 'lm', na.rm = T) +
+  scale_color_manual(
+    values = c('#9D10EC', '#334EFF', '#DA0A10')) +
+  facet_wrap(~variable, scales = 'free')
+
+ggarrange(weekly, comps, nrow = 2)
+
 ```
 
 
