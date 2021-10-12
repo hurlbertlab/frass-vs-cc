@@ -7,7 +7,6 @@ output: html_document
 
 Next steps: 
 
-1. determine best method for putting R^2 values on correlation facets - package or other, individual formulas or something else, and better as plots or facets
 1. write map function to generate all plots
 1. review papers from UK and Netherlands for comparisons between frass and caterpillar surveys
 1. compile by week plots into single plot for each frass variable, site, and year combination, in a 2x2 panel with all of the correlation plots
@@ -43,7 +42,7 @@ weekly <-
   mutate(variable = factor(
     variable,
     levels = c('mean_mass', 'meanBiomass', 'meanDensity', 'fracSurveys'),
-    labels = c('Mean Frass Mass', 'Mean Caterpillar Biomass', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+    labels = c('Mean Frass Mass (mg)', 'Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
   ggplot(
     aes(
       x = julianweek,
@@ -52,9 +51,13 @@ weekly <-
       size = variable)) +
   geom_line() +
   scale_color_manual(
+    'Variable',
     values = c('black', '#9D10EC', '#334EFF', '#DA0A10')) +
   scale_size_manual(
-    values = c(1.5, 0.5, 0.5, 0.5))
+    values = c(1.5, 0.5, 0.5, 0.5)) +
+  labs(
+    x = 'Julian Week',
+    y = 'Proportion of Maximum')
 
 comps <- 
   comp_data %>% 
@@ -66,22 +69,44 @@ comps <-
     cols = c(meanDensity:meanBiomass),
     names_to = 'variable',
     values_to = 'value') %>% 
-  mutate(variable = factor(
-    variable,
-    levels = c('mean_mass', 'meanBiomass', 'meanDensity', 'fracSurveys'),
-    labels = c('Mean Frass Mass', 'Mean Caterpillar Biomass', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+  mutate(
+    variable = factor(
+      variable,
+      levels = c('meanBiomass', 'meanDensity', 'fracSurveys'),
+      labels = c('Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+  group_by(variable) %>% 
+  mutate(
+    R2 = summary(lm(value ~ mean_mass))$r.squared %>% 
+      round(4),
+    height = 0.8*max(value)) %>%
   ggplot(
     aes(
       x = mean_mass,
       y = value,
       color = variable)) +
   geom_point() +
-  geom_smooth(method = 'lm', na.rm = T) +
+  geom_smooth(method = 'lm', na.rm = T, se = F) +
   scale_color_manual(
     values = c('#9D10EC', '#334EFF', '#DA0A10')) +
-  facet_wrap(~variable, scales = 'free')
+  facet_wrap(~variable, scales = 'free') +
+  geom_text(
+    aes(
+      x = 2.5,
+      y = height,
+      label = str_c('R^2 = ', R2, sep = ''))) +
+  theme(legend.position = 'none') +
+  labs(
+    x = 'Mean Mass of Frass (mg)',
+    y = 'Weekly Mean')
 
-ggarrange(weekly, comps, nrow = 2)
+ggarrange(
+  weekly, comps,
+  nrow = 2) %>% 
+  annotate_figure(
+    top = text_grob(
+      'CC Variables vs Mean Mass of Frass for NCBG 2021',
+      face = 'bold',
+      size = 20))
 
 ```
 
