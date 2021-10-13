@@ -12,6 +12,12 @@ Next steps:
 1. compile by week plots into single plot for each frass variable, site, and year combination, in a 2x2 panel with all of the correlation plots
 
 ```{r setup, include=FALSE}
+def <- knitr::knit_hooks$get("output")
+knitr::knit_hooks$set(output = function(x, options) {
+  x <- def(x, options)
+  ifelse(!is.null(options$suppress), gsub(pattern = "```.*```", "", x), x)
+})
+
 knitr::opts_chunk$set(echo = TRUE)
 
 knitr::opts_chunk$set(fig.width = 12, fig.height = 12)
@@ -24,89 +30,291 @@ comp_data <-
     'data/processed_data/weekly_stats_2015-2021_rel2.csv')
 ```
 
-```{r testing, warning = FALSE}
-weekly <- 
-  comp_data %>% 
-  group_by(site, year) %>% 
-  mutate(
-    across(c(meanDensity:meanBiomass, mean_mass:mean_number),
-           ~./max(., na.rm = T))) %>% 
-  filter(
-    year == 2021,
-    site == 'NC Botanical Garden') %>%
-  select(-mean_number) %>% 
-  pivot_longer(
-    cols = c(meanDensity:meanBiomass, mean_mass),
-    names_to = 'variable',
-    values_to = 'value') %>% 
-  mutate(variable = factor(
-    variable,
-    levels = c('mean_mass', 'meanBiomass', 'meanDensity', 'fracSurveys'),
-    labels = c('Mean Frass Mass (mg)', 'Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
-  ggplot(
-    aes(
-      x = julianweek,
-      y = value,
-      color = variable,
-      size = variable)) +
-  geom_line() +
-  scale_color_manual(
-    'Variable',
-    values = c('black', '#9D10EC', '#334EFF', '#DA0A10')) +
-  scale_size_manual(
-    values = c(1.5, 0.5, 0.5, 0.5)) +
-  labs(
-    x = 'Julian Week',
-    y = 'Proportion of Maximum')
+## Frass mass plots
 
-comps <- 
-  comp_data %>% 
-  filter(
-    year == 2021,
-    site == 'NC Botanical Garden') %>%
-  select(-mean_number) %>% 
-  pivot_longer(
-    cols = c(meanDensity:meanBiomass),
-    names_to = 'variable',
-    values_to = 'value') %>% 
-  mutate(
-    variable = factor(
-      variable,
-      levels = c('meanBiomass', 'meanDensity', 'fracSurveys'),
-      labels = c('Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
-  group_by(variable) %>% 
-  mutate(
-    R2 = summary(lm(value ~ mean_mass))$r.squared %>% 
-      round(4),
-    height = 0.8*max(value)) %>%
-  ggplot(
-    aes(
-      x = mean_mass,
-      y = value,
-      color = variable)) +
-  geom_point() +
-  geom_smooth(method = 'lm', na.rm = T, se = F) +
-  scale_color_manual(
-    values = c('#9D10EC', '#334EFF', '#DA0A10')) +
-  facet_wrap(~variable, scales = 'free') +
-  geom_text(
-    aes(
-      x = 2.5,
-      y = height,
-      label = str_c('R^2 = ', R2, sep = ''))) +
-  theme(legend.position = 'none') +
-  labs(
-    x = 'Mean Mass of Frass (mg)',
-    y = 'Weekly Mean')
+```{r frass mass plots, message = FALSE,echo = FALSE, warning = FALSE, suppress = TRUE}
+map(
+  c(2015:2019, 2021),
+  function(r){
+    map(
+      c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
+      function(s){
+        weekly <- 
+          comp_data %>% 
+          filter(
+            year == r,
+            site == s) %>% 
+          mutate(
+            across(c(meanDensity:meanBiomass, mean_mass:mean_number),
+                   ~./max(., na.rm = T))) %>% 
+          pivot_longer(
+            cols = c(meanDensity:meanBiomass, mean_mass),
+            names_to = 'variable',
+            values_to = 'value') %>% 
+          drop_na(value) %>% 
+          mutate(variable = factor(
+            variable,
+            levels = c('mean_mass', 'meanBiomass', 'meanDensity', 'fracSurveys'),
+            labels = c('Mean Frass Mass (mg)', 'Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+          ggplot(
+            aes(
+              x = julianweek,
+              y = value,
+              color = variable,
+              size = variable)) +
+          geom_line() +
+          scale_color_manual(
+            'Variable',
+            values = c('black', '#9D10EC', '#334EFF', '#DA0A10')) +
+          scale_size_manual(
+            values = c(1.5, 0.5, 0.5, 0.5)) +
+          labs(
+            x = 'Julian Week',
+            y = 'Proportion of Maximum')
+        
+        comps <-
+          comp_data %>%
+          filter(
+            year == r,
+            site == s) %>%
+          pivot_longer(
+            cols = c(meanDensity:meanBiomass),
+            names_to = 'variable',
+            values_to = 'value') %>%
+          mutate(
+            variable = factor(
+              variable,
+              levels = c('meanBiomass', 'meanDensity', 'fracSurveys'),
+              labels = c('Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+          group_by(variable) %>%
+          mutate(
+            R2 =
+              tryCatch(
+                summary(lm(value ~ mean_mass))$r.squared %>% round(4),
+                        error = function(c){return(0)}),
+                height = 0.8*max(value, na.rm = T)) %>%
+              ggplot(
+                aes(
+                  x = mean_mass,
+                  y = value,
+                  color = variable)) +
+              geom_point() +
+              geom_smooth(method = 'lm', na.rm = T, se = F) +
+              scale_color_manual(
+                values = c('#9D10EC', '#334EFF', '#DA0A10')) +
+              facet_wrap(~variable, scales = 'free') +
+              geom_text(
+                aes(
+                  x = 0.5*max(mean_mass, na.rm = T),
+                  y = height,
+                  label = str_c('R^2 = ', R2, sep = ''))) +
+              theme(legend.position = 'none') +
+              labs(
+                x = 'Mean Mass of Frass (mg)',
+                y = 'Weekly Mean')
+            
+            tryCatch(
+              ggarrange(
+                weekly, comps,
+                nrow = 2) %>%
+                annotate_figure(
+                  top = text_grob(
+                    str_c(
+                      'CC Variables vs Mean Mass of Frass for',
+                      s,
+                      'in',
+                      r,
+                      sep = ' '),
+                    face = 'bold',
+                    size = 20)),
+              error = function(c){})
+      })
+  })
+```
 
-ggarrange(
-  weekly, comps,
-  nrow = 2) %>% 
-  annotate_figure(
-    top = text_grob(
-      'CC Variables vs Mean Mass of Frass for NCBG 2021',
-      face = 'bold',
-      size = 20))
+## Frass number plots
+
+```{r frass number plots, message = FALSE, echo = FALSE, warning = FALSE, suppress = TRUE}
+map(
+  c(2015:2019, 2021),
+  function(r){
+    map(
+      c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
+      function(s){
+        weekly <- 
+          comp_data %>% 
+          filter(
+            year == r,
+            site == s) %>% 
+          mutate(
+            across(c(meanDensity:meanBiomass, mean_mass:mean_number),
+                   ~./max(., na.rm = T))) %>% 
+          pivot_longer(
+            cols = c(meanDensity:meanBiomass, mean_number),
+            names_to = 'variable',
+            values_to = 'value') %>% 
+          drop_na(value) %>% 
+          mutate(variable = factor(
+            variable,
+            levels = c('mean_number', 'meanBiomass', 'meanDensity', 'fracSurveys'),
+            labels = c('Mean Frass Number', 'Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+          ggplot(
+            aes(
+              x = julianweek,
+              y = value,
+              color = variable,
+              size = variable)) +
+          geom_line() +
+          scale_color_manual(
+            'Variable',
+            values = c('black', '#9D10EC', '#334EFF', '#DA0A10')) +
+          scale_size_manual(
+            values = c(1.5, 0.5, 0.5, 0.5)) +
+          labs(
+            x = 'Julian Week',
+            y = 'Proportion of Maximum')
+        
+        comps <-
+          comp_data %>%
+          filter(
+            year == r,
+            site == s) %>%
+          pivot_longer(
+            cols = c(meanDensity:meanBiomass),
+            names_to = 'variable',
+            values_to = 'value') %>%
+          mutate(
+            variable = factor(
+              variable,
+              levels = c('meanBiomass', 'meanDensity', 'fracSurveys'),
+              labels = c('Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+          group_by(variable) %>%
+          mutate(
+            R2 =
+              tryCatch(
+                summary(lm(value ~ mean_number))$r.squared %>% round(4),
+                        error = function(c){return(0)}),
+                height = 0.8*max(value, na.rm = T)) %>%
+              ggplot(
+                aes(
+                  x = mean_number,
+                  y = value,
+                  color = variable)) +
+              geom_point() +
+              geom_smooth(method = 'lm', na.rm = T, se = F) +
+              scale_color_manual(
+                values = c('#9D10EC', '#334EFF', '#DA0A10')) +
+              facet_wrap(~variable, scales = 'free') +
+              geom_text(
+                aes(
+                  x = 0.5*max(mean_number, na.rm = T),
+                  y = height,
+                  label = str_c('R^2 = ', R2, sep = ''))) +
+              theme(legend.position = 'none') +
+              labs(
+                x = 'Mean Number of Frass',
+                y = 'Weekly Mean')
+            
+            tryCatch(
+              ggarrange(
+                weekly, comps,
+                nrow = 2) %>%
+                annotate_figure(
+                  top = text_grob(
+                    str_c(
+                      'CC Variables vs Mean Number of Frass for',
+                      s,
+                      'in',
+                      r,
+                      sep = ' '),
+                    face = 'bold',
+                    size = 20)),
+              error = function(c){})
+      })
+  })
+```
+
+
+```{r NCBG 2021 single plot, warning = FALSE, include = FALSE}
+# weekly <- 
+#   comp_data %>% 
+#   filter(
+#     year == 2021,
+#     site == 'NC Botanical Garden') %>% 
+#   mutate(
+#     across(c(meanDensity:meanBiomass, mean_mass:mean_number),
+#            ~./max(., na.rm = T))) %>% 
+#   pivot_longer(
+#     cols = c(meanDensity:meanBiomass, 'mean_mass'),
+#     names_to = 'variable',
+#     values_to = 'value') %>% 
+#   mutate(variable = factor(
+#     variable,
+#     levels = c('mean_mass', 'meanBiomass', 'meanDensity', 'fracSurveys'),
+#     labels = c('Mean Frass Mass (mg)', 'Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+#   ggplot(
+#     aes(
+#       x = julianweek,
+#       y = value,
+#       color = variable,
+#       size = variable)) +
+#   geom_line() +
+#   scale_color_manual(
+#     'Variable',
+#     values = c('black', '#9D10EC', '#334EFF', '#DA0A10')) +
+#   scale_size_manual(
+#     values = c(1.5, 0.5, 0.5, 0.5)) +
+#   labs(
+#     x = 'Julian Week',
+#     y = 'Proportion of Maximum')
+# 
+# comps <- 
+#   comp_data %>% 
+#   filter(
+#     year == 2021,
+#     site == 'NC Botanical Garden') %>%
+#   pivot_longer(
+#     cols = c(meanDensity:meanBiomass),
+#     names_to = 'variable',
+#     values_to = 'value') %>% 
+#   mutate(
+#     variable = factor(
+#       variable,
+#       levels = c('meanBiomass', 'meanDensity', 'fracSurveys'),
+#       labels = c('Mean Caterpillar Biomass (?)', 'Mean Caterpillar Density', 'Fraction Surveys w/ Caterpillars'))) %>%
+#   group_by(variable) %>% 
+#   mutate(
+#     R2 = summary(lm(value ~ 'mean_mass'))$r.squared %>% 
+#       round(4),
+#     height = 0.8*max(value)) %>%
+#   ggplot(
+#     aes_string(
+#       x = 'mean_mass',
+#       y = 'value',
+#       color = 'variable')) +
+#   geom_point() +
+#   geom_smooth(method = 'lm', na.rm = T, se = F) +
+#   scale_color_manual(
+#     values = c('#9D10EC', '#334EFF', '#DA0A10')) +
+#   facet_wrap(~variable, scales = 'free') +
+#   geom_text(
+#     aes(
+#       x = 2.5,
+#       y = height,
+#       label = str_c('R^2 = ', R2, sep = ''))) +
+#   theme(legend.position = 'none') +
+#   labs(
+#     x = 'Mean Mass of Frass (mg)',
+#     y = 'Weekly Mean')
+# 
+# ggarrange(
+#   weekly, comps,
+#   nrow = 2) %>% 
+#   annotate_figure(
+#     top = text_grob(
+#       'CC Variables vs Mean Mass of Frass for NCBG 2021',
+#       face = 'bold',
+#       size = 20))
 
 ```
 
