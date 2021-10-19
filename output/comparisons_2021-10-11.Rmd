@@ -5,12 +5,6 @@ date: "10/11/2021"
 output: html_document
 ---
 
-Next steps: 
-
-1. assess lag (-3 to +3 weeks) - make function to shift jweek with lag to compare to cc - R^2 on y as function of lag - same plot can have all three cc vars
-1. review papers from UK and Netherlands for comparisons between frass and caterpillar surveys
-1. (later) compare between-season phenology - frass/cc centroid difference from overall mean relationship across years
-1. (later) write up summary report
 
 ```{r setup, include=FALSE}
 def <- knitr::knit_hooks$get("output")

@@ -5,8 +5,14 @@ date: "10/18/2021"
 output: html_document
 ---
 
+Next steps: 
+1. (later) compare between-season phenology - frass/cc centroid difference from overall mean relationship across years
+1. (later) write up summary report
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+knitr::opts_chunk$set(fig.width = 12, fig.height = 12)
 
 library(ggplot2)
 
@@ -62,7 +68,16 @@ map(
       y = R2,
       color = var)) +
   geom_point() +
-  facet_wrap(~year)
+  facet_wrap(~year) +
+  scale_color_hue(
+    labels = c(
+      'Fraction of Surveys',
+      'Mean Caterpillar Biomass',
+      'Mean Caterpillar Density')) +
+  labs(
+    x = 'Time Adjustment of Mean Frass Mass Measurements',
+    y = 'R^2',
+    color = 'CC Variable')
 ```
 
 ## Mean number of frass at NCBG
@@ -112,7 +127,16 @@ map(
       y = R2,
       color = var)) +
   geom_point() +
-  facet_wrap(~year)
+  facet_wrap(~year) +
+  scale_color_hue(
+    labels = c(
+      'Fraction of Surveys',
+      'Mean Caterpillar Biomass',
+      'Mean Caterpillar Density')) +
+  labs(
+    x = 'Time Adjustment of Mean Frass Mass Measurements',
+    y = 'R^2',
+    color = 'CC Variable')
 ```
 
 ## Mean mass of frass at Prairie Ridge
@@ -162,10 +186,19 @@ map(
       y = R2,
       color = var)) +
   geom_point() +
-  facet_wrap(~year)
+  facet_wrap(~year) +
+  scale_color_hue(
+    labels = c(
+      'Fraction of Surveys',
+      'Mean Caterpillar Biomass',
+      'Mean Caterpillar Density')) +
+  labs(
+    x = 'Time Adjustment of Mean Frass Mass Measurements',
+    y = 'R^2',
+    color = 'CC Variable')
 ```
 
-## Mean number of frass as Prairie Ridge
+## Mean number of frass at Prairie Ridge
 
 ```{r pr mean number, echo = F}
 map(
@@ -212,7 +245,16 @@ map(
       y = R2,
       color = var)) +
   geom_point() +
-  facet_wrap(~year)
+  facet_wrap(~year) +
+  scale_color_hue(
+    labels = c(
+      'Fraction of Surveys',
+      'Mean Caterpillar Biomass',
+      'Mean Caterpillar Density')) +
+  labs(
+    x = 'Time Adjustment of Mean Frass Mass Measurements',
+    y = 'R^2',
+    color = 'CC Variable')
 ```
 
 
