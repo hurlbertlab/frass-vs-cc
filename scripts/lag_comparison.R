@@ -7,6 +7,14 @@ source('scripts/functions.R')
 
 comp_data <- read_csv('data/processed_data/weekly_stats_2015-2021_rel2.csv')
 
+
+# lag comparison ----------------------------------------------------------
+
+comp_data %>% 
+  group_by(site, year) %>% 
+  summarize(
+    frass = sum(mean_mass, na.rm = T),
+    cc = sum(meanBiomass, na.rm = T))
 # make maps for all three cc vars and PR
 
 # map to generate R^2 by lag for NCBG, all years, for mean Biomass
@@ -44,6 +52,14 @@ map(
         lag = as.double(lag),
         .before = 'R2')
   }) %>% bind_rows()
+
+
+  filter(year == 2021) %>% 
+  ggplot(
+    aes(
+      x = lag,
+      y = R2)) +
+  geom_point()
 
 
 temp <- 
