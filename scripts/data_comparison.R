@@ -11,7 +11,7 @@ library(ggplot2)
 
 library(ggpubr)
 
-# read in data
+# read in combined caterpillars count and frass data across three different reliability requirements
 
 comp_data_r1 <- 
   read_csv(
@@ -134,6 +134,8 @@ comp_plot = function(
 
 
 # comparing by reliability ------------------------------------------------
+
+# generate frass mass by julian week at different reliabilities
 mm_list <- 
   map(
     c('NC Botanical Garden', 'Prairie Ridge Ecostation'),
@@ -165,68 +167,9 @@ mm_list <-
                   site == y,
                   year == x) %>% 
                 drop_na(mean_mass),
-              color = 'red') +
-            labs(
-              tag = 
-                paste(
-                  'R^2 = ',
-                  summary(lm(
-                    (comp_data_r3 %>% 
-                       filter(
-                         site == y,
-                         year == x))$mean_mass ~
-                      (comp_data_r2 %>% 
-                         filter(
-                           site == y,
-                           year == x))$mean_mass))$r.squared %>% 
-                      round(4),
-                  sep = '')) +
-            theme(
-              plot.tag.position = c(0.2,0.9))
+              color = 'red')
         })
     })
 
+# combine all plots into one object
 mm_combo <- c(mm_list[[1]], mm_list[[2]])
-
-ggplot(
-  data = comp_data_r3 %>% 
-    filter(
-      site == 'NC Botanical Garden',
-      year == 2021) %>% 
-    drop_na(mean_mass),
-  mapping = aes(
-    x = julianweek,
-    y = mean_mass)) +
-  geom_point(color = 'forestgreen') +
-  geom_line(color = 'forestgreen') +
-  geom_point(
-    data = comp_data_r2 %>% 
-      filter(
-        site == 'NC Botanical Garden',
-        year == 2021) %>% 
-      drop_na(mean_mass),
-    color = 'red') +
-  geom_line(
-    data = comp_data_r2%>% 
-      filter(
-        site == 'NC Botanical Garden',
-        year == 2021) %>% 
-      drop_na(mean_mass),
-    color = 'red') +
-  labs(
-    tag = 
-      paste(
-        'R^2 = ',
-        summary(lm(
-          (comp_data_r3 %>% 
-             filter(
-               site == 'NC Botanical Garden',
-               year == 2021))$mean_mass ~
-            (comp_data_r2 %>% 
-               filter(
-                 site == 'NC Botanical Garden',
-                 year == 2021))$mean_mass))$r.squared %>% 
-          round(4),
-        sep = '')) +
-  theme(
-    plot.tag.position = c(0.2,0.9))

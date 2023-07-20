@@ -27,6 +27,7 @@ mutate_cond <- function(.data, condition, ..., envir = parent.frame()) {
 
 # frass analysis -------------------------------------------------------------------
 
+# calculate the mean mass of frass per trap
 meanFrassByWeek = function(
   surveyData,
   for_year, # 2015-2021
@@ -86,7 +87,7 @@ meanFrassByWeek = function(
 
 # CC! ---------------------------------------------------------------------
 
-#function for calculating and displaying mean density by week for CC data
+#function for calculating and displaying caterpillar statistics by week from CC data
 
 meanDensityByWeek = function(
   surveyData,

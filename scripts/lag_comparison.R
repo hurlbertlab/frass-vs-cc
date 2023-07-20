@@ -115,3 +115,4 @@ comp_data %>%
       summary(lm(meanBiomass ~ mean_mass))$r.squared %>% round(4),
       error = function(c){return(0)})
   ) %>% View()
+
